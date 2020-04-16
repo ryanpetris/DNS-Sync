@@ -78,3 +78,6 @@ class Record:
             raise Exception('/zones.dns_records.delete %s %s - %s' % (self.zone.domain, self.host, e))
 
         self.zone.records.remove(self)
+
+    def get_normalized_data(self):
+        return self.data

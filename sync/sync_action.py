@@ -12,7 +12,7 @@ class UpdateSyncAction(SyncAction):
         self.new_record = new_record
 
     def __str__(self):
-        return f"Update {self.old_record.host} IN {self.old_record.type} {self.old_record.data} -> {self.new_record.data.get_normalized_data()}"
+        return f"Update {self.old_record} -> {self.new_record.data.get_normalized_data()}"
 
     def submit(self):
         self.old_record.update(self.new_record)
