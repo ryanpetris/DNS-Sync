@@ -104,13 +104,13 @@ class Record:
             data["priority"] = dns_record.data.priority
             data["weight"] = dns_record.data.weight
             data["port"] = dns_record.data.port
-            data["target"] = dns_record.data.target.rstrip(".")
+            data["target"] = dns_record.data.target.rstrip(".") or "."
             data["service"], data["protocol"] = (x.rstrip("_") for x in data["name"].split(".")[:2])
         elif dns_record.type == DnsRecordType.MX:
             data["priority"] = dns_record.data.priority
-            data["target"] = dns_record.data.target.rstrip(".")
+            data["target"] = dns_record.data.target.rstrip(".") or "."
         elif dns_record.type == DnsRecordType.CNAME:
-            data["target"] = dns_record.data.target.rstrip(".")
+            data["target"] = dns_record.data.target.rstrip(".") or "."
         elif dns_record.type == DnsRecordType.TXT:
             data["target"] = dns_record.data.data
         else:
