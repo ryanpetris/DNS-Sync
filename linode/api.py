@@ -40,7 +40,7 @@ def autopage(func):
         if pages <= 1:
             return clean_response(response)
 
-        for page in range(1, pages + 1):
+        for page in range(2, pages + 1):
             new_kwargs = {**kwargs}
             new_kwargs["params"] = new_kwargs["params"] if "params" in new_kwargs and new_kwargs["params"] else {}
             new_kwargs["params"]["page"] = page
@@ -81,8 +81,6 @@ class Api:
             json = response.json()
         except:
             pass
-
-        print(json)
 
         if json and "errors" in json and json["errors"]:
             raise Exception("\n".join(f"{x['field']}: {x['reason']}" if "field" in x else f"{x['reason']}" for x in json["errors"]))
