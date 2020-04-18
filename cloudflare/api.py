@@ -9,20 +9,22 @@ def dataonly(func):
     def wrapper(*args, **kwargs):
         response = func(*args, **kwargs)
 
-        if "data" not in response:
+        if "result" not in response:
             return response
 
-        return response["data"]
+        return response["result"]
 
     return wrapper
 
 
 def autopage(func):
     def clean_response(response):
-        del response["page"]
-        del response["pages"]
+        del response["result_info"]["page"]
+        del response["result_info"]["per_page"]
+        del response["result_info"]["total_pages"]
 
-        response["results"] = len(response["data"])
+        response["result_info"]["count"] = len(response["result"])
+        response["result_info"]["total_count"] = len(response["result"])
 
         return response
 
@@ -32,10 +34,10 @@ def autopage(func):
         if "params" in kwargs and kwargs["params"] and "page" in kwargs["params"]:
             return response
 
-        if "pages" not in response:
+        if "result_info" not in response or "total_pages" not in response["result_info"]:
             return response
 
-        pages = response["pages"]
+        pages = response["result_info"]["total_pages"]
 
         if pages <= 1:
             return clean_response(response)
@@ -47,7 +49,7 @@ def autopage(func):
 
             page_response = func(*args, **new_kwargs)
 
-            response["data"] += page_response["data"]
+            response["result"] += page_response["result"]
 
         return clean_response(response)
 
@@ -56,11 +58,11 @@ def autopage(func):
 
 class Api:
     def __init__(self, token: str = None):
-        self.token = token or os.environ.get("LINODE_API_TOKEN")
-        self.base_url = os.environ.get("LINODE_API_URL", "https://api.linode.com/v4/").rstrip("/")
+        self.token = token or os.environ.get("CF_API_TOKEN")
+        self.base_url = os.environ.get("CF_API_URL", "https://api.cloudflare.com/client/v4/").rstrip("/")
 
         if not self.token:
-            raise ValueError("token must be specified or LINODE_API_TOKEN environment variable must exist.")
+            raise ValueError("token must be specified or CF_API_TOKEN environment variable must exist.")
 
     def __get_default_headers(self):
         return {
@@ -83,7 +85,7 @@ class Api:
             pass
 
         if response_json and "errors" in response_json and response_json["errors"]:
-            raise Exception("\n".join(f"{x['field']}: {x['reason']}" if "field" in x else f"{x['reason']}" for x in response_json["errors"]))
+            raise Exception("\n".join(f"{x['code']}: {x['message']}" for x in response_json["errors"]))
 
         raise Exception(response.text)
 
@@ -98,6 +100,7 @@ class Api:
 
         return response.json()
 
+    @dataonly
     def post(self, url, params=None, headers=None, data=None):
         headers = {**self.__get_default_headers(), **(headers or {})}
 
@@ -113,6 +116,7 @@ class Api:
 
         return response.json()
 
+    @dataonly
     def put(self, url, params=None, headers=None, data=None):
         headers = {**self.__get_default_headers(), **(headers or {})}
 

@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 
-from . import get_arguments, get_providers, sync
+from . import get_arguments, get_providers, sync_zones
 
 
 def main():
     providers = get_providers()
     arguments = get_arguments(providers)
 
-    zonepath = arguments.zonepath
-
-    if arguments.provider:
-        provider = providers[arguments.provider]
+    if arguments.source:
+        source_provider = providers[arguments.source]
     else:
-        provider = next(value for key, value in providers.items())
+        source_provider = next(value for key, value in providers.items())
 
-    zones = provider.get_all()
+    if arguments.destination:
+        destination_provider = providers[arguments.destination]
+    else:
+        destination_provider = next(value for key, value in providers.items())
 
-    sync(zones, zonepath)
+    sync_zones(source_provider, destination_provider)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
 #!/usr/bin/env python3
 
-from .util import *
+from .dns_record_type import DnsRecordType
+from .time import Time

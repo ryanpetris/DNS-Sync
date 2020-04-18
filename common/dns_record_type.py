@@ -3,7 +3,7 @@
 from enum import Enum
 
 
-class RecordType(Enum):
+class DnsRecordType(Enum):
     A = 1
     AAAA = 28
     CNAME = 5
@@ -18,7 +18,7 @@ class RecordType(Enum):
     @staticmethod
     def parse(record_type):
         try:
-            return RecordType[record_type.upper()]
+            return DnsRecordType[record_type.upper()]
         except KeyError:
             raise ValueError(f"{record_type} is not a valid record type")
 

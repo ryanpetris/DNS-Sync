@@ -1,41 +1,51 @@
 #!/usr/bin/env python3
 
+from zonebase import Record
+
 
 class SyncAction:
     def submit(self):
         pass
 
 
-class UpdateSyncAction(SyncAction):
-    def __init__(self, old_record, new_record):
-        self.old_record = old_record
-        self.new_record = new_record
-
-    def __str__(self):
-        return f"Update {self.old_record} -> {self.new_record.data.get_normalized_data()}"
-
-    def submit(self):
-        self.old_record.update(self.new_record)
-
-
 class CreateSyncAction(SyncAction):
-    def __init__(self, zone, new_record):
-        self.zone = zone
-        self.new_record = new_record
+    def __init__(self, source: Record):
+        self.source: Record = source
 
     def __str__(self):
-        return f"Create {self.new_record}"
+        return f"Create {self.source.host} {self.source.ttl} IN {self.source.type} {self.source.data}"
 
-    def submit(self):
-        self.zone.create_record(self.new_record)
+
+class UpdateSyncAction(SyncAction):
+    def __init__(self, source: Record, destination: Record):
+        self.source: Record = source
+        self.destination: Record = destination
+
+    def __str__(self):
+        parts = []
+
+        parts.append("Update")
+        parts.append(f"{self.source.host}")
+
+        if self.source.ttl != self.destination.ttl:
+            parts.append(f"({self.destination.ttl or 0} -> {self.source.ttl or 0})")
+        else:
+            parts.append(f"{self.destination.ttl or 0}")
+
+        parts.append("IN")
+        parts.append(f"{self.destination.type}")
+        parts.append(f"{self.destination.data}")
+
+        if self.destination.data != self.source.data:
+            parts.append("->")
+            parts.append(f"{self.source.data}")
+
+        return " ".join(parts)
 
 
 class DeleteSyncAction(SyncAction):
-    def __init__(self, old_record):
-        self.old_record = old_record
+    def __init__(self, destination: Record):
+        self.destination: Record = destination
 
     def __str__(self):
-        return f"Delete {self.old_record}"
-
-    def submit(self):
-        self.old_record.delete()
+        return f"Delete {self.destination.host} {self.destination.ttl} IN {self.destination.type} {self.destination.data}"

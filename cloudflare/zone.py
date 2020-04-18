@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
-
 from .api import StaticApi
 from .record import Record
 from typing import List, Union
@@ -21,15 +19,15 @@ class Zone(BaseZone):
         return self.__records
 
     def __init__(self, zoneinfo):
-        self.id = zoneinfo["id"]
-        self.__domain = BaseZone.normalize_domain(zoneinfo["domain"])
-        self.soa_email = zoneinfo["soa_email"]
+        self.__domain = zoneinfo["name"]
         self.__records = None
+
+        self.id = zoneinfo["id"]
+        self.nameservers = zoneinfo["name_servers"]
 
     def __fetch_records(self):
         if self.__records is not None:
             return
 
-        records = StaticApi.get(f"domains/{self.id}/records")
+        records = StaticApi.get(f"zones/{self.id}/dns_records")
         self.__records = [Record(r) for r in records]
-

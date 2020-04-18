@@ -1,260 +1,172 @@
 #!/usr/bin/env python3
 
-import inspect
-import ipaddress
-import re
+from abc import ABC
+from common import DnsRecordType
+from ipaddress import IPv4Address, IPv6Address
+from typing import Union
+from zonebase import RecordData as BaseRecordData, UnparsedRecordData as BaseUnparsedRecordData, IpRecordData as BaseIpRecordData, MxRecordData as BaseMxRecordData, SrvRecordData as BaseSrvRecordData, CnameRecordData as BaseCnameRecordData, TxtRecordData as BaseTxtRecordData
 
-from .record_type import RecordType
-from common import tryit
-from typing import Iterator
 
+class RecordData(BaseRecordData, ABC):
+    @classmethod
+    def parse(cls, data: str = None, record_type: DnsRecordType = None):
+        base_type = cls.get_class_for_type(record_type)
 
-def record_data_handler(cls):
-    if not inspect.isclass(cls):
-        return cls
+        for actual_type in (IpRecordData, MxRecordData, SrvRecordData, CnameRecordData, TxtRecordData, UnparsedRecordData):
+            if issubclass(actual_type, base_type):
+                break
 
-    if not issubclass(cls, RecordData):
-        return cls
+        return actual_type(data)
 
-    for record_type in cls.handles:
-        if record_type in RecordData.handlers:
-            raise ValueError(f"Handler for {record_type} already registered.")
 
-        RecordData.handlers[record_type] = cls
+class UnparsedRecordData(BaseUnparsedRecordData, RecordData):
+    @property
+    def raw(self) -> str:
+        return self.__data
 
-    return cls
+    @raw.setter
+    def raw(self, value: Union[str, None]):
+        self.__data = value or ""
 
+    def __init__(self, data: Union[str, None] = None):
+        self.__data = ""
 
-class RecordData:
-    handles = []
-    handlers = {}
+        parsed = self.parse(data)
 
-    def __init__(self, data: str = None):
-        pass
+        self.raw = parsed.raw
 
-    def __str__(self) -> str:
-        pass
 
-    def get_normalized_data(self) -> str:
-        return self.__str__()
+class IpRecordData(BaseIpRecordData, RecordData):
+    @property
+    def ip_address(self) -> Union[IPv6Address, IPv4Address, None]:
+        return self.__ip_address
 
-    @staticmethod
-    def parse(data: str = None, record_type: RecordType = None):
-        if not record_type or record_type not in RecordData.handlers:
-            return UnparsedRecordData(data)
+    @ip_address.setter
+    def ip_address(self, value: Union[IPv6Address, IPv4Address, None]):
+        self.__ip_address = value
 
-        return RecordData.handlers[record_type](data)
+    def __init__(self, data: Union[str, None] = None):
+        self.__ip_address = None
 
+        parsed = self.parse(data)
 
-class UnparsedRecordData(RecordData):
-    handles = []
+        self.ip_address = parsed.ip_address
 
-    def __init__(self, data: str = None):
-        super().__init__(data)
 
-        self.data = data
+class MxRecordData(BaseMxRecordData, RecordData):
+    @property
+    def priority(self) -> Union[int, None]:
+        return self.__priority
 
-    def __str__(self) -> str:
-        return self.data
+    @priority.setter
+    def priority(self, value: Union[int, None]):
+        self.__priority = BaseMxRecordData.normalize_priority(value)
 
+    @property
+    def target(self) -> Union[str, None]:
+        return self.__target
 
-@record_data_handler
-class IpRecordData(RecordData):
-    handles = [
-        RecordType.A,
-        RecordType.AAAA
-    ]
+    @target.setter
+    def target(self, value: Union[str, None]):
+        self.__target = BaseMxRecordData.normalize_target(value)
 
-    def __init__(self, data: str = None):
-        super().__init__(data)
+    def __init__(self, data: Union[str, None] = None):
+        self.__priority = self.normalize_priority(None)
+        self.__target = self.normalize_target(None)
 
-        self.ip_address = tryit(ipaddress.ip_address)(data)
+        parsed = self.parse(data)
 
-    def __str__(self) -> str:
-        if self.ip_address is None:
-            return ""
+        self.priority = parsed.priority
+        self.target = parsed.target
 
-        return self.ip_address.compressed
 
+class SrvRecordData(BaseSrvRecordData, RecordData):
+    @property
+    def priority(self) -> Union[int, None]:
+        return self.__priority
 
-@record_data_handler
-class MxRecordData(RecordData):
-    handles = [
-        RecordType.MX
-    ]
+    @priority.setter
+    def priority(self, value: Union[int, None]):
+        self.__priority = self.normalize_priority(value)
 
-    record_regex = re.compile("^(?P<priority>[0-9]+)\\s+(?P<target>[^\\s]+)$")
+    @property
+    def weight(self) -> Union[int, None]:
+        return self.__weight
 
-    def __init__(self, data: str = None):
-        super().__init__(data)
+    @weight.setter
+    def weight(self, value: Union[int, None]):
+        self.__weight = self.normalize_weight(value)
 
-        self.priority = None
-        self.target = None
+    @property
+    def port(self) -> Union[int, None]:
+        return self.__port
 
-        if not data:
-            return
+    @port.setter
+    def port(self, value: Union[int, None]):
+        self.__port = self.normalize_port(value)
 
-        match = self.__class__.record_regex.match(data)
+    @property
+    def target(self) -> Union[str, None]:
+        return self.__target
 
-        if not match:
-            raise ValueError(f"Invalid MX record data: {data}")
+    @target.setter
+    def target(self, value: Union[str, None]):
+        self.__target = self.normalize_target(value)
 
-        self.priority = int(match.group("priority"))
-        self.target = match.group("target")
+    def __init__(self, data: Union[str, None] = None):
+        self.__priority = self.normalize_priority(None)
+        self.__weight = self.normalize_weight(None)
+        self.__port = self.normalize_port(None)
+        self.__target = self.normalize_target(None)
 
-        if not self.target.endswith("."):
-            self.target = f"{self.target}."
+        parsed = self.parse(data)
 
-    def __str__(self) -> str:
-        if self.priority is None and self.target is None:
-            return ""
+        self.priority = parsed.priority
+        self.weight = parsed.weight
+        self.port = parsed.port
+        self.target = parsed.target
 
-        return f"{self.priority} {self.target}"
 
+class CnameRecordData(BaseCnameRecordData, RecordData):
+    @property
+    def target(self) -> Union[str, None]:
+        return self.__target
 
-@record_data_handler
-class SrvRecordData(RecordData):
-    handles = [
-        RecordType.SRV
-    ]
+    @target.setter
+    def target(self, value: Union[str, None]):
+        self.__target = self.normalize_target(value)
 
-    record_regex = re.compile("^(?P<priority>[0-9]+)\\s+(?P<weight>[0-9]+)\\s+(?P<port>[0-9]+)\\s+(?P<target>[^\\s]+)$")
+    def __init__(self, data: Union[str, None] = None):
+        self.__target = self.normalize_target(None)
 
-    def __init__(self, data: str = None):
-        super().__init__(data)
+        parsed = self.parse(data)
 
-        self.priority = None
-        self.weight = None
-        self.port = None
-        self.target = None
+        self.target = parsed.target
 
-        if not data:
-            return
 
-        match = self.__class__.record_regex.match(data)
+class TxtRecordData(BaseTxtRecordData, RecordData):
+    @property
+    def normalized(self) -> str:
+        return self.__normalized
 
-        if not match:
-            raise ValueError(f"Invalid SRV record data: {data}")
+    @normalized.setter
+    def normalized(self, data: Union[str, None]):
+        self.__normalized = data
+        self.__raw = None
 
-        self.priority = int(match.group("priority"))
-        self.weight = int(match.group("weight"))
-        self.port = int(match.group("port"))
-        self.target = match.group("target")
+    @property
+    def raw(self) -> str:
+        if self.__raw is None:
+            self.__raw = self.quote_data(self.__normalized)
 
-        if not self.target.endswith("."):
-            self.target = f"{self.target}."
+        return self.__raw
 
-    def __str__(self) -> str:
-        if self.priority is None and self.weight is None and self.port is None and self.target is None:
-            return ""
+    @raw.setter
+    def raw(self, data: Union[str, None]):
+        self.normalized = self.unqoute_data(data)
 
-        return f"{self.priority} {self.weight} {self.port} {self.target}"
+    def __init__(self, data: Union[str, None] = None):
+        self.__normalized = None
+        self.__raw = None
 
-
-@record_data_handler
-class CnameRecordData(RecordData):
-    handles = [
-        RecordType.CNAME
-    ]
-
-    whitespace_regex = re.compile("\\s")
-
-    def __init__(self, data: str = None):
-        super().__init__(data)
-
-        self.target = None
-
-        if not data:
-            return
-
-        data = data.strip()
-
-        if self.__class__.whitespace_regex.search(data):
-            raise ValueError("CNAME data field should not contain whitespace")
-
-        self.target = data
-
-        if not self.target.endswith("."):
-            self.target = f"{self.target}."
-
-    def __str__(self) -> str:
-        return self.target or ""
-
-
-@record_data_handler
-class TxtRecordData(RecordData):
-    handles = [
-        RecordType.TXT,
-        RecordType.SPF
-    ]
-
-    whitespace_char_regex = re.compile("^\\s$")
-    escape_char = "\\"
-    quote_char = '"'
-    chars_to_escape = "\\\";"
-
-    def __init__(self, data: str = None):
-        super().__init__(data)
-
-        self.data = ""
-
-        for part in self.__get_quoted_parts(data):
-            self.data += part
-
-    def __str__(self) -> str:
-        cls = self.__class__
-        data = cls.quote_char
-
-        for char in self.data:
-            if char in cls.chars_to_escape:
-                data += cls.escape_char
-
-            data += char
-
-        data += cls.quote_char
-
-        return data
-
-    def get_normalized_data(self) -> str:
-        return self.data
-
-    def __get_quoted_parts(self, data: str = None) -> Iterator[str]:
-        if not data:
-            return
-
-        data.strip()
-
-        is_open = False
-        is_escape = False
-        part = ""
-        cls = self.__class__
-
-        for char in data:
-            if not is_open:
-                if cls.whitespace_char_regex.match(char):
-                    continue
-
-                if char == cls.quote_char:
-                    is_open = True
-                    continue
-
-                raise ValueError(f"Invalid character found outside of TXT value: {char}")
-
-            if is_escape:
-                part += char
-                is_escape = False
-                continue
-
-            if char == cls.escape_char:
-                is_escape = True
-                continue
-
-            if char == cls.quote_char:
-                yield part
-
-                is_open = False
-                part = ""
-
-                continue
-
-            part += char
+        self.raw = data

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import re
 
-from common import paramvalidate
-from typing import Any
+from typing import Union
 
 
-@paramvalidate([0, "seconds"], [int, str], "time must be an int or string")
 class Time:
     time_regex = re.compile("^((?P<weeks>[0-9]+)[wW])?((?P<days>[0-9]+)[dD])?((?P<hours>[0-9]+)[hH])?((?P<minutes>[0-9]+)[mM])?((?P<seconds>[0-9]+)[sS])?$")
     number_regex = re.compile("^[0-9]+$")
@@ -16,11 +16,16 @@ class Time:
     day_seconds = hour_seconds * 24
     week_seconds = day_seconds * 7
 
-    def __init__(self, time: Any = None):
+    def __init__(self, time: Union[Time, int, str, None] = None):
         self.seconds = 0
         self.__was_formatted = False
 
-        if not time:
+        if time is None:
+            return
+
+        if isinstance(time, Time):
+            self.seconds = time.seconds
+            self.__was_formatted = time.__was_formatted
             return
 
         if isinstance(time, int):
@@ -81,4 +86,29 @@ class Time:
 
         return "".join(parts)
 
+    def __eq__(self, other):
+        if issubclass(type(other), Time):
+            return self.seconds == other.seconds
 
+        if issubclass(type(other), int):
+            return self.seconds == other
+
+        return False
+
+    def __lt__(self, other):
+        if issubclass(type(other), Time):
+            return self.seconds < other.seconds
+
+        if issubclass(type(other), int):
+            return self.seconds < other
+
+        return False
+
+    def __gt__(self, other):
+        if issubclass(type(other), Time):
+            return self.seconds > other.seconds
+
+        if issubclass(type(other), int):
+            return self.seconds > other
+
+        return False
