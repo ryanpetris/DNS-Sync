@@ -5,7 +5,7 @@ def get_provider(namespace):
     try:
         module = __import__(namespace)
         return module.Provider()
-    except Exception as e:
+    except:
         return None
 
 
