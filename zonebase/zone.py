@@ -1,20 +1,29 @@
 #!/usr/bin/env python3
 
 from .record import Record
-from abc import ABC, abstractmethod
 from typing import List, Union
 
 
-class Zone(ABC):
+class Zone:
     @property
-    @abstractmethod
     def domain(self) -> Union[str, None]:
-        pass
+        return self.__domain
+
+    @domain.setter
+    def domain(self, value: Union[str, None]):
+        self.__domain = self.normalize_domain(value)
 
     @property
-    @abstractmethod
     def records(self) -> List[Record]:
-        pass
+        return self.__records
+
+    @records.setter
+    def records(self, value: List[Record]):
+        self.__records = value or []
+
+    def __init__(self):
+        self.__domain: Union[str, None] = self.normalize_domain(None)
+        self.__records: List[Record] = []
 
     def __str__(self) -> str:
         export_tab_width = 8

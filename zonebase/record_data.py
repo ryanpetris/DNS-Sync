@@ -4,41 +4,70 @@ from __future__ import annotations
 
 import re
 
-from abc import ABC, abstractmethod
 from common import DnsRecordType
 from ipaddress import ip_address, IPv4Address, IPv6Address
 from typing import Type, Union
 
 
-class RecordData(ABC):
+class RecordData:
     @property
-    @abstractmethod
     def raw(self) -> str:
-        pass
+        return self.__raw
+
+    @raw.setter
+    def raw(self, value: str):
+        self.__raw = value or ""
 
     @property
     def normalized(self) -> str:
         return self.raw
 
+    @normalized.setter
+    def normalized(self, value: str):
+        self.raw = value
+
     @property
     def priority(self) -> Union[int, None]:
         return None
+
+    @priority.setter
+    def priority(self, value: Union[int, None]):
+        pass
 
     @property
     def weight(self) -> Union[int, None]:
         return None
 
+    @weight.setter
+    def weight(self, value: Union[int, None]):
+        pass
+
     @property
     def port(self) -> Union[int, None]:
         return None
+
+    @port.setter
+    def port(self, value: Union[int, None]):
+        pass
 
     @property
     def target(self) -> Union[str, None]:
         return None
 
+    @target.setter
+    def target(self, value: Union[str, None]):
+        pass
+
     @property
     def ip_address(self) -> Union[IPv6Address, IPv4Address, None]:
         return None
+
+    @ip_address.setter
+    def ip_address(self, value: Union[IPv6Address, IPv4Address, None]):
+        pass
+
+    def __init__(self):
+        self.__raw: str = ""
 
     def __str__(self) -> str:
         return self.raw or ""
@@ -62,7 +91,7 @@ class RecordData(ABC):
         return (self.raw or "") > (other.raw or "")
 
     @staticmethod
-    def get_class_for_type(rtype: DnsRecordType) -> Type[ParseableRecordData]:
+    def get_class_for_type(rtype: DnsRecordType) -> Type[RecordData]:
         if rtype in (DnsRecordType.A, DnsRecordType.AAAA):
             return IpRecordData
 
@@ -84,36 +113,32 @@ class RecordData(ABC):
     def type_parse(cls, rtype: DnsRecordType, data: Union[str, None]) -> RecordData:
         rclass = cls.get_class_for_type(rtype)
 
-        return rclass.parse(data)
+        data = rclass()
+        data.raw = data
+
+        return data
 
 
-class ParseableRecordData(RecordData, ABC):
-    @staticmethod
-    @abstractmethod
-    def parse(data: Union[str, None]) -> ParseableRecordData:
-        pass
+class UnparsedRecordData(RecordData):
+    def __init__(self):
+        super().__init__()
 
-
-class UnparsedRecordData(ParseableRecordData, ABC):
     @staticmethod
     def parse(data: Union[str, None]) -> UnparsedRecordData:
-        return UnparsedRecordDataImp(data)
+        data = UnparsedRecordData()
+        data.raw = data
+
+        return data
 
 
-class UnparsedRecordDataImp(UnparsedRecordData):
+class IpRecordData(RecordData):
     @property
-    def raw(self) -> str:
-        return self.__data
-
-    def __init__(self, data: Union[str, None]):
-        self.__data = data
-
-
-class IpRecordData(ParseableRecordData, ABC):
-    @property
-    @abstractmethod
     def ip_address(self) -> Union[IPv6Address, IPv4Address, None]:
-        pass
+        return self.__ip_address
+
+    @ip_address.setter
+    def ip_address(self, value: Union[IPv6Address, IPv4Address, None]):
+        self.__ip_address = self.normalize_ip_address(value)
 
     @property
     def raw(self) -> str:
@@ -122,60 +147,70 @@ class IpRecordData(ParseableRecordData, ABC):
 
         return self.ip_address.compressed
 
+    @raw.setter
+    def raw(self, value: str):
+        self.ip_address = self.normalize_ip_address(value)
+
+    def __init__(self):
+        super().__init__()
+
+        self.__ip_address: Union[IPv6Address, IPv4Address, None] = self.normalize_ip_address(None)
+
     @staticmethod
-    def parse(data: Union[str, None]) -> IpRecordData:
-        if data is None:
-            return IpRecordDataImp()
+    def normalize_ip_address(ip: Union[IPv6Address, IPv4Address, str, None]):
+        if issubclass(type(ip), IPv6Address) or issubclass(type(ip), IPv4Address):
+            return ip
+
+        if ip is None:
+            return None
 
         try:
-            ip = ip_address(data.strip())
+            return ip_address(ip.strip())
         except:
-            ip = None
-
-        return IpRecordDataImp(ip)
+            raise ValueError(f"{ip} is an invalid IP address")
 
 
-class IpRecordDataImp(IpRecordData):
+class MxRecordData(RecordData):
     @property
-    def ip_address(self) -> Union[IPv6Address, IPv4Address, None]:
-        return self.__ip_address
-
-    def __init__(self, ip: Union[IPv6Address, IPv4Address, None] = None):
-        self.__ip_address = ip
-
-
-class MxRecordData(ParseableRecordData, ABC):
-    @property
-    @abstractmethod
     def priority(self) -> Union[int, None]:
-        pass
+        return self.__priority
+
+    @priority.setter
+    def priority(self, value: Union[int, None]):
+        self.__priority = self.normalize_priority(value)
 
     @property
-    @abstractmethod
     def target(self) -> Union[str, None]:
-        pass
+        return self.__target
+
+    @target.setter
+    def target(self, value: Union[str, None]):
+        self.__target = self.normalize_target(value)
 
     @property
     def raw(self) -> str:
-        priority = self.normalize_priority(self.priority)
-        target = self.normalize_target(self.target)
+        return f"{self.priority} {self.target}"
 
-        return f"{priority} {target}"
+    @raw.setter
+    def raw(self, value: str):
+        if not value:
+            self.priority = None
+            self.target = None
+            return
 
-    @staticmethod
-    def parse(data: Union[str, None]) -> MxRecordData:
-        if data is None:
-            return MxRecordDataImp()
-
-        match = re.match("^(?P<priority>[0-9]+)\\s+(?P<target>[^\\s]+)$", data.strip())
+        match = re.match("^(?P<priority>[0-9]+)\\s+(?P<target>[^\\s]+)$", value.strip())
 
         if not match:
-            raise ValueError(f"Invalid MX record data: {data}")
+            raise ValueError(f"Invalid MX record data: {value}")
 
-        priority = int(match.group("priority"))
-        target = match.group("target")
+        self.priority = int(match.group("priority"))
+        self.target = match.group("target")
 
-        return MxRecordDataImp(priority, target)
+    def __init__(self):
+        super().__init__()
+
+        self.__priority: Union[int, None] = self.normalize_priority(None)
+        self.__target: Union[str, None] = self.normalize_target(None)
 
     @staticmethod
     def normalize_priority(priority: Union[int, None]) -> int:
@@ -191,40 +226,38 @@ class MxRecordData(ParseableRecordData, ABC):
         return target
 
 
-class MxRecordDataImp(MxRecordData):
+class SrvRecordData(RecordData):
     @property
     def priority(self) -> Union[int, None]:
         return self.__priority
+
+    @priority.setter
+    def priority(self, value: Union[int, None]):
+        self.__priority = self.normalize_priority(value)
+
+    @property
+    def weight(self) -> Union[int, None]:
+        return self.__weight
+
+    @weight.setter
+    def weight(self, value: Union[int, None]):
+        self.__weight = self.normalize_weight(value)
+
+    @property
+    def port(self) -> Union[int, None]:
+        return self.__port
+
+    @port.setter
+    def port(self, value: Union[int, None]):
+        self.__port = self.normalize_port(value)
 
     @property
     def target(self) -> Union[str, None]:
         return self.__target
 
-    def __init__(self, priority: Union[int, None] = None, target: Union[str, None] = None):
-        self.__priority = self.normalize_priority(priority)
-        self.__target = self.normalize_target(target)
-
-
-class SrvRecordData(ParseableRecordData, ABC):
-    @property
-    @abstractmethod
-    def priority(self) -> Union[int, None]:
-        pass
-
-    @property
-    @abstractmethod
-    def weight(self) -> Union[int, None]:
-        pass
-
-    @property
-    @abstractmethod
-    def port(self) -> Union[int, None]:
-        pass
-
-    @property
-    @abstractmethod
-    def target(self) -> Union[str, None]:
-        pass
+    @target.setter
+    def target(self, value: Union[str, None]):
+        self.__target = self.normalize_target(value)
 
     @property
     def raw(self) -> str:
@@ -235,22 +268,32 @@ class SrvRecordData(ParseableRecordData, ABC):
 
         return f"{priority} {weight} {port} {target}"
 
-    @staticmethod
-    def parse(data: Union[str, None]) -> SrvRecordData:
-        if data is None:
-            return SrvRecordDataImp()
+    @raw.setter
+    def raw(self, value: str):
+        if not value:
+            self.priority = None
+            self.weight = None
+            self.port = None
+            self.target = None
+            return
 
-        match = re.match("^(?P<priority>[0-9]+)\\s+(?P<weight>[0-9]+)\\s+(?P<port>[0-9]+)\\s+(?P<target>[^\\s]+)$", data.strip())
+        match = re.match("^(?P<priority>[0-9]+)\\s+(?P<weight>[0-9]+)\\s+(?P<port>[0-9]+)\\s+(?P<target>[^\\s]+)$", value.strip())
 
         if not match:
-            raise ValueError(f"Invalid SRV record data: {data}")
+            raise ValueError(f"Invalid SRV record data: {value}")
 
-        priority = int(match.group("priority"))
-        weight = int(match.group("weight"))
-        port = int(match.group("port"))
-        target = match.group("target")
+        self.priority = int(match.group("priority"))
+        self.weight = int(match.group("weight"))
+        self.port = int(match.group("port"))
+        self.target = match.group("target")
 
-        return SrvRecordDataImp(priority, weight, port, target)
+    def __init__(self):
+        super().__init__()
+
+        self.__priority: Union[int, None] = self.normalize_priority(None)
+        self.__weight: Union[int, None] = self.normalize_weight(None)
+        self.__port: Union[int, None] = self.normalize_port(None)
+        self.__target: Union[str, None] = self.normalize_target(None)
 
     @staticmethod
     def normalize_priority(priority: Union[int, None]) -> int:
@@ -274,55 +317,33 @@ class SrvRecordData(ParseableRecordData, ABC):
         return target
 
 
-class SrvRecordDataImp(SrvRecordData):
-    @property
-    def priority(self) -> Union[int, None]:
-        return self.__priority
-
-    @property
-    def weight(self) -> Union[int, None]:
-        return self.__weight
-
-    @property
-    def port(self) -> Union[int, None]:
-        return self.__port
-
+class CnameRecordData(RecordData):
     @property
     def target(self) -> Union[str, None]:
         return self.__target
 
-    def __init__(self, priority: Union[int, None] = None, weight: Union[int, None] = None, port: Union[int, None] = None, target: Union[str, None] = None):
-        self.__priority = self.normalize_priority(priority)
-        self.__weight = self.normalize_weight(weight)
-        self.__port = self.normalize_port(port)
-        self.__target = self.normalize_target(target)
-
-
-class CnameRecordData(ParseableRecordData, ABC):
-    @property
-    @abstractmethod
-    def target(self) -> Union[str, None]:
-        pass
+    @target.setter
+    def target(self, value: Union[str, None]):
+        self.__target = self.normalize_target(value)
 
     @property
     def raw(self) -> str:
-        return self.normalize_target(self.target)
+        return self.target
 
-    @staticmethod
-    def parse(data: Union[str, None]) -> CnameRecordData:
-        if data is None:
-            return CnameRecordDataImp()
+    @raw.setter
+    def raw(self, value: str):
+        self.target = value
 
-        data = data.strip()
-        match = re.match("\\s", data)
+    def __init__(self):
+        super().__init__()
 
-        if match:
-            raise ValueError("CNAME data field should not contain whitespace")
-
-        return CnameRecordDataImp(data)
+        self.__target = self.normalize_target(None)
 
     @staticmethod
     def normalize_target(target: Union[str, None]) -> str:
+        if re.match("\\s", target or ""):
+            raise ValueError("CNAME data field should not contain whitespace")
+
         target = target or "."
 
         if not target.endswith("."):
@@ -331,30 +352,27 @@ class CnameRecordData(ParseableRecordData, ABC):
         return target
 
 
-class CnameRecordDataImp(CnameRecordData):
+class TxtRecordData(RecordData):
     @property
-    def target(self) -> Union[str, None]:
-        return self.__target
-
-    def __init__(self, target: Union[str, None] = None):
-        self.__target = self.normalize_target(target)
-
-
-class TxtRecordData(ParseableRecordData, ABC):
-    @property
-    @abstractmethod
     def normalized(self) -> str:
-        pass
+        return self.__normalized
 
-    @classmethod
-    def parse(cls, data: Union[str, None]) -> TxtRecordData:
-        if data is None:
-            return TxtRecordDataImp()
+    @normalized.setter
+    def normalized(self, value: str):
+        self.__normalized = value or ""
 
-        normalized_data = cls.unqoute_data(data)
-        raw_data = cls.quote_data(normalized_data)
+    @property
+    def raw(self) -> str:
+        return self.quote_data(self.normalized)
 
-        return TxtRecordDataImp(raw_data, normalized_data)
+    @raw.setter
+    def raw(self, value: str):
+        self.normalized = self.unqoute_data(value)
+
+    def __init__(self):
+        super().__init__()
+
+        self.__normalized: str = ""
 
     @staticmethod
     def unqoute_data(data: Union[str, None] = None) -> str:
@@ -421,17 +439,3 @@ class TxtRecordData(ParseableRecordData, ABC):
         result += quote_char
 
         return result
-
-
-class TxtRecordDataImp(TxtRecordData):
-    @property
-    def normalized(self) -> str:
-        return self.__normalized
-
-    @property
-    def raw(self) -> str:
-        return self.__raw
-
-    def __init__(self, raw_data: Union[str, None] = None, normalized_data: Union[str, None] = None):
-        self.__raw = raw_data
-        self.__normalized = normalized_data
