@@ -130,19 +130,19 @@ class Http:
 
         return self.mangle_response(request, data)
 
-    def delete(self, url, *, params=None, headers=None, data=None):
+    def delete(self, url, params=None, headers=None, data=None):
         return self.__send(HttpRequest(HttpMethod.DELETE, url, params=params, headers=headers, data=data))
 
-    def get(self, url, *, params=None, headers=None):
+    def get(self, url, params=None, headers=None):
         return self.__send(HttpRequest(HttpMethod.GET, url, params=params, headers=headers))
 
-    def patch(self, url, *, params=None, headers=None, data=None):
+    def patch(self, url, params=None, headers=None, data=None):
         return self.__send(HttpRequest(HttpMethod.PATCH, url, params=params, headers=headers, data=data))
 
-    def post(self, url, *, params=None, headers=None, data=None):
+    def post(self, url, params=None, headers=None, data=None):
         return self.__send(HttpRequest(HttpMethod.POST, url, params=params, headers=headers, data=data))
 
-    def put(self, url, *, params=None, headers=None, data=None):
+    def put(self, url, params=None, headers=None, data=None):
         return self.__send(HttpRequest(HttpMethod.PUT, url, params=params, headers=headers, data=data))
 
 
@@ -153,23 +153,23 @@ class HttpStatic:
             api = instance
 
             @classmethod
-            def delete(cls, url, *, params=None, headers=None):
+            def delete(cls, url, params=None, headers=None):
                 return cls.api.delete(url, params=params, headers=headers)
 
             @classmethod
-            def get(cls, url, *, params=None, headers=None):
+            def get(cls, url, params=None, headers=None):
                 return cls.api.get(url, params=params, headers=headers)
 
             @classmethod
-            def patch(cls, url, *, params=None, headers=None, data=None):
+            def patch(cls, url, params=None, headers=None, data=None):
                 return cls.api.patch(url, params=params, headers=headers, data=data)
 
             @classmethod
-            def post(cls, url, *, params=None, headers=None, data=None):
+            def post(cls, url, params=None, headers=None, data=None):
                 return cls.api.post(url, params=params, headers=headers, data=data)
 
             @classmethod
-            def put(cls, url, *, params=None, headers=None, data=None):
+            def put(cls, url, params=None, headers=None, data=None):
                 return cls.api.put(url, params=params, headers=headers, data=data)
 
         return StaticHttp
