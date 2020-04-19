@@ -41,6 +41,10 @@ def sync_zone(zone: str, source_provider: Provider, destination_provider: Provid
         if not source_provider.can_read_type(record.type):
             continue
 
+        # If the destination provider can read a type but not write it, then don't sync it.
+        if not destination_provider.can_write_type(record.type):
+            continue
+
         key = (record.host, record.type)
 
         if key not in destination_types:

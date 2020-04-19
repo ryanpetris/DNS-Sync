@@ -7,55 +7,6 @@ from httpbase import Http, HttpStatic, HttpRequest
 from typing import Any, Dict, Union
 
 
-def dataonly(func):
-    def wrapper(*args, **kwargs):
-        response = func(*args, **kwargs)
-
-        if "data" not in response:
-            return response
-
-        return response["data"]
-
-    return wrapper
-
-
-def autopage(func):
-    def clean_response(response):
-        del response["page"]
-        del response["pages"]
-
-        response["results"] = len(response["data"])
-
-        return response
-
-    def wrapper(*args, **kwargs):
-        response = func(*args, **kwargs)
-
-        if "params" in kwargs and kwargs["params"] and "page" in kwargs["params"]:
-            return response
-
-        if "pages" not in response:
-            return response
-
-        pages = response["pages"]
-
-        if pages <= 1:
-            return clean_response(response)
-
-        for page in range(2, pages + 1):
-            new_kwargs = {**kwargs}
-            new_kwargs["params"] = {**new_kwargs["params"]} if "params" in new_kwargs and new_kwargs["params"] else {}
-            new_kwargs["params"]["page"] = page
-
-            page_response = func(*args, **new_kwargs)
-
-            response["data"] += page_response["data"]
-
-        return clean_response(response)
-
-    return wrapper
-
-
 class Api(Http):
     @property
     def base_url(self) -> Union[str, None]:
@@ -72,8 +23,6 @@ class Api(Http):
         if not self.__token:
             raise ValueError("token must be specified or LINODE_API_TOKEN environment variable must exist.")
 
-        self.get = dataonly(autopage(self.get))
-
     def check_response(self, request: HttpRequest, response: requests.Response) -> Union[Dict[str, Any], None]:
         try:
             response_json = response.json()
@@ -87,6 +36,12 @@ class Api(Http):
             raise Exception("\n".join(f"{x['field']}: {x['reason']}" if "field" in x else f"{x['reason']}" for x in response_json["errors"]))
 
         raise Exception(response.text)
+
+    def select_data(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
+        return response and "data" in response and response["data"] or None
+
+    def select_pages(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[int, None]:
+        return response and "pages" in response and response["pages"] or None
 
 
 StaticApi = HttpStatic.make_static(Api())

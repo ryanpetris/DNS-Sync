@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import requests
 
+from copy import deepcopy
 from enum import Enum, auto
 from typing import Any, Dict, Union
 
@@ -81,11 +82,35 @@ class Http:
 
         return request
 
-    def mangle_response(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
-        return response
+    def mangle_paged_request(self, request: HttpRequest, page: int) -> HttpRequest:
+        request.params["page"] = str(page)
 
-    def __send(self, request: HttpRequest) -> Union[Dict[str, Any], None]:
-        request = self.mangle_request(request)
+        return request
+
+    def mangle_response(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
+        data = self.select_data(request, response)
+        pages = self.select_pages(request, response)
+
+        if pages is None or pages <= 1 or not isinstance(data, list):
+            return data if data is not None else response
+
+        for page in range(2, pages + 1):
+            page_request = self.mangle_paged_request(deepcopy(request), page)
+            page_response = self.__send_internal(page_request)
+            page_data = self.select_data(request, page_response)
+
+            if page_data and isinstance(page_data, list):
+                data += page_data
+
+        return data
+
+    def select_data(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
+        return None
+
+    def select_pages(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[int, None]:
+        return None
+
+    def __send_internal(self, request: HttpRequest) -> Union[Dict[str, Any], None]:
         kwargs = {}
 
         if request.method.is_post_like():
@@ -96,7 +121,12 @@ class Http:
 
         url = f"{self.base_url.rstrip('/')}/{request.url.lstrip('/')}" if self.base_url else request.url
         response = requests.request(request.method.requests_name, url, params=request.params, headers=request.headers, **kwargs)
-        data = self.check_response(request, response)
+
+        return self.check_response(request, response)
+
+    def __send(self, request: HttpRequest) -> Union[Dict[str, Any], None]:
+        request = self.mangle_request(request)
+        data = self.__send_internal(request)
 
         return self.mangle_response(request, data)
 

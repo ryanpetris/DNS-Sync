@@ -8,71 +8,6 @@ from httpbase import Http, HttpStatic, HttpRequest
 from typing import Any, Dict, Union
 
 
-def dataonly(func):
-    def wrapper(*args, **kwargs):
-        response = func(*args, **kwargs)
-
-        if "domains" in response:
-            return response["domains"]
-
-        if "domain_records" in response:
-            return response["domain_records"]
-
-        if "domain_record" in response:
-            return response["domain_record"]
-
-        return  response
-
-    return wrapper
-
-
-def autopage(func):
-    def clean_response(response):
-        del response["links"]
-
-        if "meta" in response:
-            if "domains" in response:
-                response["meta"]["total"] = len(response["domains"])
-
-            if "domain_records" in response:
-                response["meta"]["total"] = len(response["domain_records"])
-
-        return response
-
-    def wrapper(*args, **kwargs):
-        response = func(*args, **kwargs)
-
-        if "params" in kwargs and kwargs["params"] and "page" in kwargs["params"]:
-            return response
-
-        if "links" not in response or "pages" not in response["links"]:
-            return response
-
-        url = urllib.parse.urlparse(response["links"]["pages"]["last"])
-        url_query = urllib.parse.parse_qs(url.query)
-        pages = int(next(iter(url_query["page"])))
-
-        if pages <= 1:
-            return clean_response(response)
-
-        for page in range(2, pages + 1):
-            new_kwargs = {**kwargs}
-            new_kwargs["params"] = {**new_kwargs["params"]} if "params" in new_kwargs and new_kwargs["params"] else {}
-            new_kwargs["params"]["page"] = page
-
-            page_response = func(*args, **new_kwargs)
-
-            if "domains" in response:
-                response["domains"] += page_response["domains"]
-
-            if "domain_records" in response:
-                response["domain_records"] += page_response["domain_records"]
-
-        return clean_response(response)
-
-    return wrapper
-
-
 class Api(Http):
     @property
     def base_url(self) -> Union[str, None]:
@@ -89,15 +24,11 @@ class Api(Http):
         if not self.__token:
             raise ValueError("token must be specified or DO_API_TOKEN environment variable must exist.")
 
-        self.get = dataonly(autopage(self.get))
-        self.post = dataonly(self.post)
-        self.put = dataonly(self.put)
-
     def mangle_request(self, request: HttpRequest) -> HttpRequest:
         request = super().mangle_request(request)
 
         # use maxiumum page size that's allowed per documentation
-        request.params["per_page"] = 200
+        request.params["per_page"] = str(200)
 
         return request
 
@@ -114,6 +45,36 @@ class Api(Http):
             raise Exception(f"{response_json['id']}: {response_json['message']}" if "id" in response_json else response_json["message"])
 
         raise Exception(response.text)
+
+    def select_data(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
+        if not response:
+            return response
+
+        if "domains" in response:
+            return response["domains"]
+
+        if "domain_records" in response:
+            return response["domain_records"]
+
+        if "domain_record" in response:
+            return response["domain_record"]
+
+        return None
+
+    def select_pages(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[int, None]:
+        if not response:
+            return response
+
+        if "links" not in response or "pages" not in response["links"] or "last" not in response["links"]["pages"]:
+            return None
+
+        url = urllib.parse.urlparse(response["links"]["pages"]["last"])
+        url_query = urllib.parse.parse_qs(url.query)
+
+        if "page" not in url_query or not url_query["page"]:
+            return None
+
+        return int(next(iter(url_query["page"])))
 
 
 StaticApi = HttpStatic.make_static(Api())
