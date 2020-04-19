@@ -2,7 +2,7 @@
 
 from .sync_action import SyncAction, UpdateSyncAction, CreateSyncAction, DeleteSyncAction
 from ..common import DnsRecordType
-from ..zonebase import Provider, Record
+from ..zonebase import Provider, Record, TransactionProvider
 from typing import Dict, List, Tuple
 
 
@@ -98,3 +98,7 @@ def sync_zone(zone: str, source_provider: Provider, destination_provider: Provid
 
         if isinstance(action, DeleteSyncAction):
             destination_provider.delete_record(zone, action.destination)
+
+    if sync_actions and isinstance(destination_provider, TransactionProvider):
+        print(f"Committing zone {zone} to provider {destination_provider.id}")
+        destination_provider.commit_zone(zone)

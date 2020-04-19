@@ -62,3 +62,9 @@ class ReadOnlyProvider(Provider, ABC):
 
     def delete_record(self, zone: str, record: Record):
         pass
+
+
+class TransactionProvider(Provider, ABC):
+    @abstractmethod
+    def commit_zone(self, zone: str):
+        pass

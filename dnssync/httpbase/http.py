@@ -71,14 +71,12 @@ class Http:
         raise Exception(response.text)
 
     def mangle_request(self, request: HttpRequest) -> HttpRequest:
-        if self.authorization and "Authorization" not in request.headers:
-            request.headers["Authorization"] = self.authorization
+        if self.authorization:
+            request.headers.setdefault("Authorization", self.authorization)
 
-        if request.method.is_post_like() and request.data and isinstance(request.data, dict):
+        if request.method.is_post_like() and request.data and not isinstance(request.data, bytes) and not isinstance(request.data, str):
             request.data = json.dumps(request.data)
-
-            if "Content-Type" not in request.headers:
-                request.headers["Content-Type"] = "application/json"
+            request.headers.setdefault("Content-Type", "application/json")
 
         return request
 
