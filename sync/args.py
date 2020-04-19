@@ -30,4 +30,12 @@ def get_arguments(providers: Dict[str, Provider]):
         required=len(destination_providers) > 1
     )
 
+    parser.add_argument(
+        "-z",
+        "--zone",
+        dest="zones",
+        action="append",
+        help="zones to sync, or all if none specified"
+    )
+
     return parser.parse_args(sys.argv[1:])

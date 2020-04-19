@@ -16,6 +16,7 @@ def sync_zone(zone: str, source_provider: Provider, destination_provider: Provid
 
     if not destination_zone:
         print(f"Zone {zone} does not exist in destination provider {destination_provider.id}")
+        return
 
     print(f"Syncing zone {zone} from {source_provider.id} to {destination_provider.id}")
 
@@ -93,8 +94,3 @@ def sync_zone(zone: str, source_provider: Provider, destination_provider: Provid
 
         if isinstance(action, DeleteSyncAction):
             destination_provider.delete_record(zone, action.destination)
-
-
-def sync_zones(source_provider: Provider, destination_provider: Provider):
-    for zone in sorted(destination_provider.list_zones()):
-        sync_zone(zone, source_provider, destination_provider)

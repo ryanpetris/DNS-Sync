@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from . import get_arguments, get_providers, sync_zones
+from . import get_arguments, get_providers, sync_zone
 
 
 def main():
@@ -17,7 +17,13 @@ def main():
     else:
         destination_provider = next(value for key, value in providers.items())
 
-    sync_zones(source_provider, destination_provider)
+    if arguments.zones:
+        zones = arguments.zones
+    else:
+        zones = destination_provider.list_zones()
+
+    for zone in zones:
+        sync_zone(zone, source_provider, destination_provider)
 
 
 if __name__ == "__main__":
