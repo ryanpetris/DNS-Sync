@@ -22,7 +22,7 @@ def main():
     else:
         zones = destination_provider.list_zones()
 
-    for zone in zones:
+    for zone in sorted(zones):
         sync_zone(zone, source_provider, destination_provider)
 
 
