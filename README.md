@@ -54,7 +54,7 @@ Reads and writes dns records to a domain in a [Cloudflare](https://www.cloudflar
 
 The `CF_API_TOKEN` environment variable must be populated with an API Token for this provider to work or show up in the list of available providers. Please refer to the [Cloudflare API documentation](https://api.cloudflare.com/#getting-started-requests) for more information.
 
-# GoDaddy (`godaddy`)
+## GoDaddy (`godaddy`)
 Reads and writes dns records to a domain in a [GoDaddy](https://www.godaddy.com/) account.
 
 The `GD_API_KEY` and `GD_API_SECRET` environment variables must be populated with an API Key and Secret for this provider to work or show up in the list of available providers. Please refer to the [GoDaddy API documentation](https://developer.godaddy.com/) for more information.
