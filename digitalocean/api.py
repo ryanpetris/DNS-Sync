@@ -48,7 +48,7 @@ class Api(Http):
 
     def select_data(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
         if not response:
-            return response
+            return None
 
         if "domains" in response:
             return response["domains"]
@@ -62,10 +62,7 @@ class Api(Http):
         return None
 
     def select_pages(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[int, None]:
-        if not response:
-            return response
-
-        if "links" not in response or "pages" not in response["links"] or "last" not in response["links"]["pages"]:
+        if not response or "links" not in response or "pages" not in response["links"] or "last" not in response["links"]["pages"]:
             return None
 
         url = urllib.parse.urlparse(response["links"]["pages"]["last"])
