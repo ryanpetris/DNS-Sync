@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from common import Time
-from zonebase import Record as BaseRecord
+from ...common import Time
+from ...zonebase import Record as BaseRecord
 
 
 class RecordDefaults:

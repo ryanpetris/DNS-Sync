@@ -3,15 +3,15 @@
 from .api import StaticApi
 from .zone import Zone
 from .record import Record
-from common import DnsRecordType
+from ...common import DnsRecordType
+from ...zonebase import Provider as BaseProvider, Record as BaseRecord
 from typing import List, Union
-from zonebase import Provider as BaseProvider, Record as BaseRecord
 
 
 class Provider(BaseProvider):
     @property
     def id(self) -> str:
-        return "digitalocean"
+        return "linode"
 
     @property
     def zones(self):
@@ -32,11 +32,6 @@ class Provider(BaseProvider):
         return next((z for z in self.zones if z.domain == zone), None)
 
     def can_read_type(self, rtype: DnsRecordType) -> bool:
-        return rtype in self.can_write_type(rtype) or rtype in [
-            DnsRecordType.NS
-        ]
-
-    def can_write_type(self, rtype: DnsRecordType) -> bool:
         return rtype in [
             DnsRecordType.A,
             DnsRecordType.AAAA,
@@ -46,6 +41,9 @@ class Provider(BaseProvider):
             DnsRecordType.TXT
         ]
 
+    def can_write_type(self, rtype: DnsRecordType) -> bool:
+        return self.can_read_type(rtype)
+
     def create_record(self, zone: str, record: BaseRecord) -> Record:
         z = self.get_zone(zone)
 
@@ -54,7 +52,7 @@ class Provider(BaseProvider):
             pass
 
         data = self.__get_request_info(record)
-        response = StaticApi.post(f"domains/{z.domain}/records", data=data)
+        response = StaticApi.post(f"domains/{z.id}/records", data=data)
         record = Record(response)
 
         z.records.append(record)
@@ -64,7 +62,7 @@ class Provider(BaseProvider):
     def update_record(self, zone: str, record: Record, new_record: BaseRecord) -> Record:
         z = self.get_zone(zone)
         data = self.__get_request_info(new_record, record)
-        response = StaticApi.put(f"domains/{z.domain}/records/{record.id}", data=data)
+        response = StaticApi.put(f"domains/{z.id}/records/{record.id}", data=data)
 
         record.set_data(response)
 
@@ -73,27 +71,36 @@ class Provider(BaseProvider):
     def delete_record(self, zone: str, record: Record):
         z = self.get_zone(zone)
 
-        StaticApi.delete(f"domains/{z.domain}/records/{record.id}")
+        StaticApi.delete(f"domains/{z.id}/records/{record.id}")
 
         z.records.remove(record)
 
     @staticmethod
-    def __get_request_info(dns_record, do_record=None):
+    def __get_request_info(dns_record, linode_record=None):
         data = {
-            "type": f"{do_record and do_record.type or dns_record.type}",
-            "name": do_record and do_record.host or dns_record.host,
-            "ttl": dns_record and dns_record.ttl and dns_record.ttl.seconds or do_record and do_record.ttl,
-            "data": dns_record.data.target if dns_record.data.target else None,
-            "priority": dns_record.data.priority,
-            "weight": dns_record.data.weight,
-            "port": dns_record.data.port,
+            "type": f"{linode_record and linode_record.type or dns_record.type}",
+            "name": linode_record and linode_record.host or dns_record.host,
+            "ttl_sec": dns_record and dns_record.ttl and dns_record.ttl.seconds or linode_record and linode_record.ttl,
+            "target": (dns_record.data.target.rstrip(".") or ".") if dns_record.data.target else None,
+            "priority": dns_record.data.priority or 0,
+            "weight": dns_record.data.weight or 0,
+            "port": dns_record.data.port or 0,
+            "service": None,
+            "protocol": None,
             "tag": None
         }
 
-        if dns_record.type == DnsRecordType.TXT:
-            data["data"] = dns_record.data.normalized
+        if data["name"] == "@":
+            data["name"] = ""
 
-        if data["data"] is None:
-            data["data"] = f"{dns_record.data}"
+        if dns_record.type == DnsRecordType.SRV:
+            data["service"] = Record.get_service_from_host(data["name"])
+            data["protocol"] = Record.get_protocol_from_host(data["name"])
+
+        if dns_record.type == DnsRecordType.TXT:
+            data["target"] = dns_record.data.normalized
+
+        if data["target"] is None:
+            data["target"] = f"{dns_record.data}"
 
         return data

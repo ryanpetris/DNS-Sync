@@ -2,8 +2,8 @@
 
 from .record import Record
 from .zone import Zone
+from ..common import DnsRecordType
 from abc import ABC, abstractmethod
-from common import DnsRecordType
 from typing import List, Union
 
 

@@ -4,7 +4,7 @@ import os
 import requests
 import urllib.parse
 
-from httpbase import Http, HttpStatic, HttpRequest
+from ...httpbase import Http, HttpStatic, HttpRequest
 from typing import Any, Dict, Union
 
 

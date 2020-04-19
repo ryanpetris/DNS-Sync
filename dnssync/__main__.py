@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from . import get_arguments, get_providers, sync_zone
+from .sync import get_arguments, get_providers, sync_zone
 
 
 def main():

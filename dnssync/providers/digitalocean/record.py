@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from common import DnsRecordType
+from ...common import DnsRecordType
+from ...zonebase import Record as BaseRecord
 from typing import Union
-from zonebase import Record as BaseRecord
 
 
 class Record(BaseRecord):

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from common import DnsRecordType
+from ..common import DnsRecordType
 from ipaddress import ip_address, IPv4Address, IPv6Address
 from typing import Type, Union
 

@@ -3,7 +3,7 @@
 import re
 
 from .record_data import RecordData, UnparsedRecordData
-from common import DnsRecordType, Time
+from ..common import DnsRecordType, Time
 from typing import Union
 
 

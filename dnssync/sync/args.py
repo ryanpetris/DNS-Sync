@@ -2,9 +2,9 @@
 
 import sys
 
+from ..zonebase import Provider
 from argparse import ArgumentParser
 from typing import Dict
-from zonebase import Provider
 
 
 def get_arguments(providers: Dict[str, Provider]):

@@ -3,9 +3,9 @@
 from .api import StaticApi
 from .record import Record
 from .zone import Zone
-from common import DnsRecordType
+from ...common import DnsRecordType
+from ...zonebase import Provider as BaseProvider
 from typing import Union, List
-from zonebase import Provider as BaseProvider
 
 
 class Provider(BaseProvider):

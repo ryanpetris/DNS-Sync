@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from .api import StaticApi
 from .record import Record
+from ...zonebase import Zone as BaseZone
 from typing import List
-from zonebase import Zone as BaseZone
 
 
 class Zone(BaseZone):

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 from .sync_action import SyncAction, UpdateSyncAction, CreateSyncAction, DeleteSyncAction
-from common import DnsRecordType
+from ..common import DnsRecordType
+from ..zonebase import Provider, Record
 from typing import Dict, List, Tuple
-from zonebase import Provider, Record
 
 
 def sync_zone(zone: str, source_provider: Provider, destination_provider: Provider):

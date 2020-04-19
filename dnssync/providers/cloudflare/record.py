@@ -2,8 +2,8 @@
 
 import re
 
-from common import DnsRecordType
-from zonebase import Record as BaseRecord, TxtRecordData
+from ...common import DnsRecordType
+from ...zonebase import Record as BaseRecord, TxtRecordData
 
 
 class Record(BaseRecord):

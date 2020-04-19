@@ -3,10 +3,10 @@
 import os
 
 from .zone import Zone
-from common import DnsRecordType
+from ...common import DnsRecordType
+from ...zonebase import ReadOnlyProvider as BaseReadOnlyProvider
 from queue import PriorityQueue
 from typing import List, Union
-from zonebase import ReadOnlyProvider as BaseReadOnlyProvider
 
 
 class Provider(BaseReadOnlyProvider):

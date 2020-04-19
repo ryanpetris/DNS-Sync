@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from .record import Record, RecordDefaults
-from zonebase import Zone as BaseZone
+from ...zonebase import Zone as BaseZone
 
 
 class Zone(BaseZone):
