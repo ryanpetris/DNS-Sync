@@ -42,7 +42,9 @@ class Provider(BaseProvider):
         ]
 
     def can_write_type(self, rtype: DnsRecordType) -> bool:
-        return self.can_read_type(rtype)
+        return rtype in self.can_write_type(rtype) or rtype in [
+            DnsRecordType.NS
+        ]
 
     def create_record(self, zone: str, record: BaseRecord) -> Record:
         z = self.get_zone(zone)
