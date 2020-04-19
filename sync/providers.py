@@ -16,6 +16,7 @@ def get_providers() -> Dict[str, Provider]:
     providers = [
         get_provider("zonefile"),
         get_provider("linode"),
+        get_provider("digitalocean"),
         get_provider("cloudflare")
     ]
 
