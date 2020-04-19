@@ -47,11 +47,3 @@ class Record(BaseRecord):
     def set_data(self, data: BaseRecord):
         self.ttl = data.ttl
         self.data = data.data
-
-    @staticmethod
-    def get_service_from_host(host: Union[str, None]):
-        return host.split(".")[0].lstrip("_")
-
-    @staticmethod
-    def get_protocol_from_host(host: Union[str, None]):
-        return host.split(".")[1].lstrip("_")

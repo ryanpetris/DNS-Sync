@@ -30,11 +30,3 @@ class Record(BaseRecord):
         self.data.weight = data["weight"]
         self.data.port = data["port"]
         self.data.target = data["data"]
-
-    @staticmethod
-    def get_service_from_host(host: Union[str, None]):
-        return host.split(".")[0].lstrip("_")
-
-    @staticmethod
-    def get_protocol_from_host(host: Union[str, None]):
-        return host.split(".")[1].lstrip("_")
