@@ -32,6 +32,11 @@ class Provider(BaseProvider):
         return next((z for z in self.zones if z.domain == zone), None)
 
     def can_read_type(self, rtype: DnsRecordType) -> bool:
+        return rtype in self.can_write_type(rtype) or rtype in [
+            DnsRecordType.NS
+        ]
+
+    def can_write_type(self, rtype: DnsRecordType) -> bool:
         return rtype in [
             DnsRecordType.A,
             DnsRecordType.AAAA,
@@ -39,11 +44,6 @@ class Provider(BaseProvider):
             DnsRecordType.SRV,
             DnsRecordType.CNAME,
             DnsRecordType.TXT
-        ]
-
-    def can_write_type(self, rtype: DnsRecordType) -> bool:
-        return rtype in self.can_write_type(rtype) or rtype in [
-            DnsRecordType.NS
         ]
 
     def create_record(self, zone: str, record: BaseRecord) -> Record:
