@@ -4,6 +4,8 @@ Changing DNS providers can be a pain if you have lots of DNS records. Make the t
 
 In general, the following record types are supported: `A`, `AAAA`, `CNAME`, `MX`, `SRV`, `SPF`, and `TXT`. The following record types are recognized and can be displayed however they are generally ignored for syncing purposes: `NS`, `SOA`, `PTR`.
 
+*To submit bug reports, etc., please visit this project on [GitLab](https://gitlab.com/petris/dns-sync).*
+
 # Running
 
 The provided `sync.sh` script will run DNS Sync properly from anywhere. In general, your current/working directory should be a directory with zone files, however it is possible to sync directly from provider to provider without using zone files.
