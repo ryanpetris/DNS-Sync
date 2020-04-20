@@ -10,7 +10,7 @@ In general, the following record types are supported: `A`, `AAAA`, `CNAME`, `MX`
 
 The provided `sync.sh` script will run DNS Sync properly from anywhere. In general, your current/working directory should be a directory with zone files, however it is possible to sync directly from provider to provider without using zone files.
 
-`python -m dnssync` can also be used if dnssync is installed globally, `PYTHONPATH` includes the path to this repository, or the current directory is the base directory of this repository.
+`python -m dns-sync` can also be used if dns-sync is installed globally, `PYTHONPATH` includes the path to this repository, or the current directory is the base directory of this repository.
 
 ## Parameters
 

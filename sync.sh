@@ -2,4 +2,4 @@
 
 export PYTHONPATH="$(cd "$(dirname "$0")" && pwd):$PYTHONPATH"
 
-python -m dnssync "$@"
+python -m dns-sync "$@"
