@@ -17,7 +17,7 @@ class Api(Http):
         return f"sso-key {self.__api_key}:{self.__api_secret}"
 
     def __init__(self, api_key: str = None, api_secret: str = None, shopper_id: str = None):
-        self.__base_url = os.environ.get("GD_API_URL", "https://api.godaddy.com/v1/").rstrip("/")
+        self.__base_url = os.environ.get("GD_API_URL", "https://api.godaddy.com/v1/")
         self.__api_key = api_key or os.environ.get("GD_API_KEY")
         self.__api_secret = api_secret or os.environ.get("GD_API_SECRET")
         self.__shopper_id = shopper_id or os.environ.get("GD_SHOPPER_ID")

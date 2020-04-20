@@ -18,7 +18,7 @@ class Api(Http):
         return f"Bearer {self.__token}"
 
     def __init__(self, token: str = None):
-        self.__base_url = os.environ.get("DO_API_URL", "https://api.digitalocean.com/v2/").rstrip("/")
+        self.__base_url = os.environ.get("DO_API_URL", "https://api.digitalocean.com/v2/")
         self.__token = token or os.environ.get("DO_API_TOKEN")
 
         if not self.__token:

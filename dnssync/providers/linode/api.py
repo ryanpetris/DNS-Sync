@@ -17,7 +17,7 @@ class Api(Http):
         return f"Bearer {self.__token}"
 
     def __init__(self, token: str = None):
-        self.__base_url = os.environ.get("LINODE_API_URL", "https://api.linode.com/v4/").rstrip("/")
+        self.__base_url = os.environ.get("LINODE_API_URL", "https://api.linode.com/v4/")
         self.__token = token or os.environ.get("LINODE_API_TOKEN")
 
         if not self.__token:

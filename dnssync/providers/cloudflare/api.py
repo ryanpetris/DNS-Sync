@@ -17,7 +17,7 @@ class Api(Http):
         return f"Bearer {self.__token}"
 
     def __init__(self, token: str = None):
-        self.__base_url = os.environ.get("CF_API_URL", "https://api.cloudflare.com/client/v4/").rstrip("/")
+        self.__base_url = os.environ.get("CF_API_URL", "https://api.cloudflare.com/client/v4/")
         self.__token = token or os.environ.get("CF_API_TOKEN")
 
         if not self.__token:
