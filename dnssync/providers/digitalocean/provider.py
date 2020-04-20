@@ -73,12 +73,11 @@ class Provider(BaseProvider):
 
         z.records.remove(record)
 
-    @classmethod
-    def __get_request_info(cls, record, old_record=None):
+    def __get_request_info(self, record, old_record=None):
         data = {
             "type": f"{record.type}",
             "name": record.host,
-            "ttl": cls.find_record_ttl(record, old_record),
+            "ttl": self.find_record_ttl(record, old_record),
             "data": record.data.target,
             "priority": record.data.priority,
             "weight": record.data.weight,
