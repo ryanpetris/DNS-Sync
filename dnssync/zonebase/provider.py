@@ -2,16 +2,17 @@
 
 from .record import Record
 from .zone import Zone
-from ..common import DnsRecordType
+from ..common import DnsRecordType, Time
 from abc import ABC, abstractmethod
 from typing import List, Union
 
 
 class Provider(ABC):
+    default_ttl = Time("1h")
+
     @property
-    @abstractmethod
     def id(self) -> str:
-        pass
+        return self.__class__.__module__.split(".")[-2]
 
     @property
     def read_only(self) -> bool:
@@ -44,6 +45,16 @@ class Provider(ABC):
     @abstractmethod
     def delete_record(self, zone: str, record: Record):
         pass
+
+    def find_record_ttl(self, *args: Union[Record, None], default: int = None) -> int:
+        for record in args:
+            if record and record.ttl and record.ttl.seconds:
+                return record.ttl.seconds
+
+        if default is not None:
+            return default
+
+        return self.default_ttl.seconds
 
 
 class ReadOnlyProvider(Provider, ABC):

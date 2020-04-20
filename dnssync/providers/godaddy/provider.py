@@ -10,10 +10,6 @@ from typing import List, Union
 
 class Provider(BaseTransactionProvider):
     @property
-    def id(self) -> str:
-        return "godaddy"
-
-    @property
     def zones(self):
         if self.__zones is None:
             params = {

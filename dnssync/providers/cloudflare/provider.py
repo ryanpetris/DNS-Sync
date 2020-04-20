@@ -10,10 +10,6 @@ from typing import Union, List
 
 class Provider(BaseProvider):
     @property
-    def id(self) -> str:
-        return "cloudflare"
-
-    @property
     def zones(self):
         if self.__zones is None:
             zones = StaticApi.get("zones")
