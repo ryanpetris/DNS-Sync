@@ -4,16 +4,16 @@ import os
 import requests
 
 from ...httpbase import Http, HttpStatic, HttpRequest
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 
 class Api(Http):
     @property
-    def base_url(self) -> Union[str, None]:
+    def base_url(self) -> Optional[str]:
         return self.__base_url
 
     @property
-    def authorization(self) -> Union[str, None]:
+    def authorization(self) -> Optional[str]:
         return f"sso-key {self.__api_key}:{self.__api_secret}"
 
     def __init__(self, api_key: str = None, api_secret: str = None, shopper_id: str = None):
@@ -33,7 +33,7 @@ class Api(Http):
 
         return request
 
-    def check_response(self, request: HttpRequest, response: requests.Response) -> Union[Dict[str, Any], None]:
+    def check_response(self, request: HttpRequest, response: requests.Response) -> Optional[Dict[str, Any]]:
         try:
             response_json = response.json()
         except ValueError:

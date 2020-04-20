@@ -52,7 +52,7 @@ Linode does not support the `SPF` record type, and therefore any `SPF` records f
 
 ## Name.com (`namecom`)
 
-Reads and writes dns records to a comain in a [Name.com](https://www.name.com/) account.
+Reads and writes dns records to a domain in a [Name.com](https://www.name.com/) account.
 
 The `NAMECOM_API_USERNAME` and `NAMECOM_API_PASSWORD` environment variables must be populated with your Name.com username and API token for this provider to work or show up in the list of available providers. Please refer to the [Name.com API documentation](https://www.name.com/api-docs) for more information.
 

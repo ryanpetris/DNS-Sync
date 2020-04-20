@@ -5,7 +5,7 @@ from .zone import Zone
 from .record import Record
 from ...common import DnsRecordType
 from ...zonebase import TransactionProvider as BaseTransactionProvider, Record as BaseRecord
-from typing import List, Union
+from typing import List, Optional
 
 
 class Provider(BaseTransactionProvider):
@@ -29,7 +29,7 @@ class Provider(BaseTransactionProvider):
     def list_zones(self) -> List[str]:
         return [zone.domain for zone in self.zones]
 
-    def get_zone(self, zone: str) -> Union[Zone, None]:
+    def get_zone(self, zone: str) -> Optional[Zone]:
         return next((z for z in self.zones if z.domain == zone), None)
 
     def can_read_type(self, rtype: DnsRecordType) -> bool:

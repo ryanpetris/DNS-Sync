@@ -6,7 +6,7 @@ import re
 
 from ..common import DnsRecordType
 from ipaddress import ip_address, IPv4Address, IPv6Address
-from typing import Type, Union
+from typing import Type, Optional, Union
 
 
 class RecordData:
@@ -27,35 +27,35 @@ class RecordData:
         self.raw = value
 
     @property
-    def priority(self) -> Union[int, None]:
+    def priority(self) -> Optional[int]:
         return None
 
     @priority.setter
-    def priority(self, value: Union[int, None]):
+    def priority(self, value: Optional[int]):
         pass
 
     @property
-    def weight(self) -> Union[int, None]:
+    def weight(self) -> Optional[int]:
         return None
 
     @weight.setter
-    def weight(self, value: Union[int, None]):
+    def weight(self, value: Optional[int]):
         pass
 
     @property
-    def port(self) -> Union[int, None]:
+    def port(self) -> Optional[int]:
         return None
 
     @port.setter
-    def port(self, value: Union[int, None]):
+    def port(self, value: Optional[int]):
         pass
 
     @property
-    def target(self) -> Union[str, None]:
+    def target(self) -> Optional[str]:
         return None
 
     @target.setter
-    def target(self, value: Union[str, None]):
+    def target(self, value: Optional[str]):
         pass
 
     @property
@@ -110,13 +110,13 @@ class RecordData:
         return UnparsedRecordData
 
     @classmethod
-    def type_parse(cls, rtype: DnsRecordType, data: Union[str, None]) -> RecordData:
+    def type_parse(cls, rtype: DnsRecordType, data: Optional[str]) -> RecordData:
         rclass = cls.get_class_for_type(rtype)
 
-        data = rclass()
-        data.raw = data
+        result = rclass()
+        result.raw = data
 
-        return data
+        return result
 
 
 class UnparsedRecordData(RecordData):
@@ -124,11 +124,11 @@ class UnparsedRecordData(RecordData):
         super().__init__()
 
     @staticmethod
-    def parse(data: Union[str, None]) -> UnparsedRecordData:
-        data = UnparsedRecordData()
-        data.raw = data
+    def parse(data: Optional[str]) -> UnparsedRecordData:
+        result = UnparsedRecordData()
+        result.raw = data
 
-        return data
+        return result
 
 
 class IpRecordData(RecordData):
@@ -172,19 +172,19 @@ class IpRecordData(RecordData):
 
 class MxRecordData(RecordData):
     @property
-    def priority(self) -> Union[int, None]:
+    def priority(self) -> Optional[int]:
         return self.__priority
 
     @priority.setter
-    def priority(self, value: Union[int, None]):
+    def priority(self, value: Optional[int]):
         self.__priority = self.normalize_priority(value)
 
     @property
-    def target(self) -> Union[str, None]:
+    def target(self) -> Optional[str]:
         return self.__target
 
     @target.setter
-    def target(self, value: Union[str, None]):
+    def target(self, value: Optional[str]):
         self.__target = self.normalize_target(value)
 
     @property
@@ -209,15 +209,15 @@ class MxRecordData(RecordData):
     def __init__(self):
         super().__init__()
 
-        self.__priority: Union[int, None] = self.normalize_priority(None)
-        self.__target: Union[str, None] = self.normalize_target(None)
+        self.__priority: Optional[int] = self.normalize_priority(None)
+        self.__target: Optional[str] = self.normalize_target(None)
 
     @staticmethod
-    def normalize_priority(priority: Union[int, None]) -> int:
+    def normalize_priority(priority: Optional[int]) -> int:
         return priority or 0
 
     @staticmethod
-    def normalize_target(target: Union[str, None]) -> str:
+    def normalize_target(target: Optional[str]) -> str:
         target = target or "."
 
         if not target.endswith("."):
@@ -228,35 +228,35 @@ class MxRecordData(RecordData):
 
 class SrvRecordData(RecordData):
     @property
-    def priority(self) -> Union[int, None]:
+    def priority(self) -> Optional[int]:
         return self.__priority
 
     @priority.setter
-    def priority(self, value: Union[int, None]):
+    def priority(self, value: Optional[int]):
         self.__priority = self.normalize_priority(value)
 
     @property
-    def weight(self) -> Union[int, None]:
+    def weight(self) -> Optional[int]:
         return self.__weight
 
     @weight.setter
-    def weight(self, value: Union[int, None]):
+    def weight(self, value: Optional[int]):
         self.__weight = self.normalize_weight(value)
 
     @property
-    def port(self) -> Union[int, None]:
+    def port(self) -> Optional[int]:
         return self.__port
 
     @port.setter
-    def port(self, value: Union[int, None]):
+    def port(self, value: Optional[int]):
         self.__port = self.normalize_port(value)
 
     @property
-    def target(self) -> Union[str, None]:
+    def target(self) -> Optional[str]:
         return self.__target
 
     @target.setter
-    def target(self, value: Union[str, None]):
+    def target(self, value: Optional[str]):
         self.__target = self.normalize_target(value)
 
     @property
@@ -290,25 +290,25 @@ class SrvRecordData(RecordData):
     def __init__(self):
         super().__init__()
 
-        self.__priority: Union[int, None] = self.normalize_priority(None)
-        self.__weight: Union[int, None] = self.normalize_weight(None)
-        self.__port: Union[int, None] = self.normalize_port(None)
-        self.__target: Union[str, None] = self.normalize_target(None)
+        self.__priority: Optional[int] = self.normalize_priority(None)
+        self.__weight: Optional[int] = self.normalize_weight(None)
+        self.__port: Optional[int] = self.normalize_port(None)
+        self.__target: Optional[str] = self.normalize_target(None)
 
     @staticmethod
-    def normalize_priority(priority: Union[int, None]) -> int:
+    def normalize_priority(priority: Optional[int]) -> int:
         return priority or 0
 
     @staticmethod
-    def normalize_weight(weight: Union[int, None]) -> int:
+    def normalize_weight(weight: Optional[int]) -> int:
         return weight or 0
 
     @staticmethod
-    def normalize_port(port: Union[int, None]) -> int:
+    def normalize_port(port: Optional[int]) -> int:
         return port or 0
 
     @staticmethod
-    def normalize_target(target: Union[str, None]) -> str:
+    def normalize_target(target: Optional[str]) -> str:
         target = target or "."
 
         if not target.endswith("."):
@@ -319,11 +319,11 @@ class SrvRecordData(RecordData):
 
 class CnameRecordData(RecordData):
     @property
-    def target(self) -> Union[str, None]:
+    def target(self) -> Optional[str]:
         return self.__target
 
     @target.setter
-    def target(self, value: Union[str, None]):
+    def target(self, value: Optional[str]):
         self.__target = self.normalize_target(value)
 
     @property
@@ -340,7 +340,7 @@ class CnameRecordData(RecordData):
         self.__target = self.normalize_target(None)
 
     @staticmethod
-    def normalize_target(target: Union[str, None]) -> str:
+    def normalize_target(target: Optional[str]) -> str:
         if re.match("\\s", target or ""):
             raise ValueError("CNAME data field should not contain whitespace")
 
@@ -375,7 +375,7 @@ class TxtRecordData(RecordData):
         self.__normalized: str = ""
 
     @staticmethod
-    def unqoute_data(data: Union[str, None] = None) -> str:
+    def unqoute_data(data: Optional[str] = None) -> str:
         whitespace_char_regex = re.compile("^\\s$")
         escape_char = "\\"
         quote_char = '"'
@@ -422,7 +422,7 @@ class TxtRecordData(RecordData):
         return result
 
     @staticmethod
-    def quote_data(data: Union[str, None] = None) -> str:
+    def quote_data(data: Optional[str] = None) -> str:
         escape_char = "\\"
         quote_char = '"'
         chars_to_escape = "\\\";"

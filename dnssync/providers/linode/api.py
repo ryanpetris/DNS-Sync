@@ -4,16 +4,16 @@ import os
 import requests
 
 from ...httpbase import Http, HttpStatic, HttpRequest
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 
 class Api(Http):
     @property
-    def base_url(self) -> Union[str, None]:
+    def base_url(self) -> Optional[str]:
         return self.__base_url
 
     @property
-    def authorization(self) -> Union[str, None]:
+    def authorization(self) -> Optional[str]:
         return f"Bearer {self.__token}"
 
     def __init__(self, token: str = None):
@@ -23,7 +23,7 @@ class Api(Http):
         if not self.__token:
             raise ValueError("token must be specified or LINODE_API_TOKEN environment variable must exist.")
 
-    def check_response(self, request: HttpRequest, response: requests.Response) -> Union[Dict[str, Any], None]:
+    def check_response(self, request: HttpRequest, response: requests.Response) -> Optional[Dict[str, Any]]:
         try:
             response_json = response.json()
         except ValueError:
@@ -37,10 +37,10 @@ class Api(Http):
 
         raise Exception(response.text)
 
-    def select_data(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
+    def select_data(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         return response and "data" in response and response["data"] or None
 
-    def select_pages(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[int, None]:
+    def select_pages(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[int]:
         return response and "pages" in response and response["pages"] or None
 
 

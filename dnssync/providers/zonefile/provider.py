@@ -6,7 +6,7 @@ from .zone import Zone
 from ...common import DnsRecordType
 from ...zonebase import ReadOnlyProvider as BaseReadOnlyProvider
 from queue import PriorityQueue
-from typing import List, Union
+from typing import List, Optional
 
 
 class Provider(BaseReadOnlyProvider):
@@ -26,7 +26,7 @@ class Provider(BaseReadOnlyProvider):
 
         return zones
 
-    def get_zone(self, zone: str) -> Union[Zone, None]:
+    def get_zone(self, zone: str) -> Optional[Zone]:
         basepath = os.environ.get("ZONEFILE_PATH", ".")
         filepath = os.path.join(basepath, f"{zone}.db")
 

@@ -4,7 +4,7 @@ import re
 
 from .record_data import RecordData, UnparsedRecordData
 from ..common import DnsRecordType, Time
-from typing import Union
+from typing import Optional, Union
 
 
 class Record:
@@ -35,19 +35,19 @@ class Record:
         self.data = match.group("data")
 
     @property
-    def host(self) -> Union[str, None]:
+    def host(self) -> Optional[str]:
         return self.__host
 
     @host.setter
-    def host(self, value: Union[str, None]):
+    def host(self, value: Optional[str]):
         self.__host = self.normalize_host(value)
 
     @property
-    def ttl(self) -> Union[Time, None]:
+    def ttl(self) -> Optional[Time]:
         return self.__ttl
 
     @ttl.setter
-    def ttl(self, value: Union[Time, None]):
+    def ttl(self, value: Optional[Time]):
         self.__ttl = self.normalize_ttl(value)
 
     @property
@@ -55,44 +55,44 @@ class Record:
         return self.ttl is not None
 
     @property
-    def type(self) -> Union[DnsRecordType, None]:
+    def type(self) -> Optional[DnsRecordType]:
         return self.__type
 
     @type.setter
-    def type(self, value: Union[DnsRecordType, None]):
+    def type(self, value: Optional[DnsRecordType]):
         self.__type = self.normalize_type(value)
         self.data = self.data
 
     @property
-    def data(self) -> Union[RecordData, None]:
+    def data(self) -> Optional[RecordData]:
         return self.__data
 
     @data.setter
-    def data(self, value: Union[RecordData, None]):
+    def data(self, value: Optional[RecordData]):
         self.__data = self.normalize_data(value, self.type)
 
     def __init__(self):
-        self.__host: Union[str, None] = self.normalize_host(None)
-        self.__ttl: Union[Time, None] = self.normalize_ttl(None)
-        self.__type: Union[DnsRecordType, None] = self.normalize_type(None)
-        self.__data: Union[RecordData, None] = None
+        self.__host: Optional[str] = self.normalize_host(None)
+        self.__ttl: Optional[Time] = self.normalize_ttl(None)
+        self.__type: Optional[DnsRecordType] = self.normalize_type(None)
+        self.__data: Optional[RecordData] = None
 
     def __str__(self):
         return self.raw
 
     @staticmethod
-    def normalize_host(host: Union[str, None]) -> str:
+    def normalize_host(host: Optional[str]) -> str:
         return host or "@"
 
     @staticmethod
-    def normalize_ttl(ttl: Union[Time, int, str, None]) -> Union[Time, None]:
+    def normalize_ttl(ttl: Union[Time, int, str, None]) -> Optional[Time]:
         if ttl is None:
             return None
 
         return Time(ttl)
 
     @staticmethod
-    def normalize_type(record_type: Union[DnsRecordType, str, None]) -> Union[DnsRecordType, None]:
+    def normalize_type(record_type: Union[DnsRecordType, str, None]) -> Optional[DnsRecordType]:
         if record_type is None:
             return None
 
@@ -105,7 +105,7 @@ class Record:
         raise ValueError("record_type must be of type DnsRecordType, str, or None")
 
     @staticmethod
-    def normalize_data(data: Union[RecordData, str, None], record_type: Union[DnsRecordType, None] = None) -> Union[RecordData, None]:
+    def normalize_data(data: Union[RecordData, str, None], record_type: Optional[DnsRecordType] = None) -> Optional[RecordData]:
         if data is None and record_type is None:
             return None
 

@@ -5,16 +5,16 @@ import requests
 import urllib.parse
 
 from ...httpbase import Http, HttpStatic, HttpRequest
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 
 class Api(Http):
     @property
-    def base_url(self) -> Union[str, None]:
+    def base_url(self) -> Optional[str]:
         return self.__base_url
 
     @property
-    def authorization(self) -> Union[str, None]:
+    def authorization(self) -> Optional[str]:
         return f"Bearer {self.__token}"
 
     def __init__(self, token: str = None):
@@ -32,7 +32,7 @@ class Api(Http):
 
         return request
 
-    def check_response(self, request: HttpRequest, response: requests.Response) -> Union[Dict[str, Any], None]:
+    def check_response(self, request: HttpRequest, response: requests.Response) -> Optional[Dict[str, Any]]:
         try:
             response_json = response.json()
         except ValueError:
@@ -46,7 +46,7 @@ class Api(Http):
 
         raise Exception(response.text)
 
-    def select_data(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
+    def select_data(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         if not response:
             return None
 
@@ -61,7 +61,7 @@ class Api(Http):
 
         return None
 
-    def select_pages(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[int, None]:
+    def select_pages(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[int]:
         if not response or "links" not in response or "pages" not in response["links"] or "last" not in response["links"]["pages"]:
             return None
 

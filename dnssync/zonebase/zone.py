@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
 from .record import Record
-from typing import List, Union
+from typing import List, Optional
 
 
 class Zone:
     @property
-    def domain(self) -> Union[str, None]:
+    def domain(self) -> Optional[str]:
         return self.__domain
 
     @domain.setter
-    def domain(self, value: Union[str, None]):
+    def domain(self, value: Optional[str]):
         self.__domain = self.normalize_domain(value)
 
     @property
@@ -22,7 +22,7 @@ class Zone:
         self.__records = value or []
 
     def __init__(self):
-        self.__domain: Union[str, None] = self.normalize_domain(None)
+        self.__domain: Optional[str] = self.normalize_domain(None)
         self.__records: List[Record] = []
 
     def __str__(self) -> str:
@@ -53,7 +53,7 @@ class Zone:
         return "\n".join(outlines)
 
     @staticmethod
-    def normalize_domain(domain: Union[str, None]) -> Union[str, None]:
+    def normalize_domain(domain: Optional[str]) -> Optional[str]:
         if domain is None:
             return None
 

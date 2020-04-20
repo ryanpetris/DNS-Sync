@@ -7,7 +7,7 @@ import requests
 
 from copy import deepcopy
 from enum import Enum, auto
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 
 class HttpMethod(Enum):
@@ -44,7 +44,7 @@ class HttpMethod(Enum):
 
 
 class HttpRequest:
-    def __init__(self, method: HttpMethod, url: str, params: Union[Dict[str, str], None] = None, headers: Union[Dict[str, str], None] = None, data: Any = None):
+    def __init__(self, method: HttpMethod, url: str, params: Optional[Dict[str, str]] = None, headers: Optional[Dict[str, str]] = None, data: Any = None):
         self.method = method
         self.url: str = url
         self.params: Dict[str, str] = params or {}
@@ -54,14 +54,14 @@ class HttpRequest:
 
 class Http:
     @property
-    def base_url(self) -> Union[str, None]:
+    def base_url(self) -> Optional[str]:
         return None
 
     @property
-    def authorization(self) -> Union[str, None]:
+    def authorization(self) -> Optional[str]:
         return None
 
-    def check_response(self, request: HttpRequest, response: requests.Response) -> Union[Dict[str, Any], None]:
+    def check_response(self, request: HttpRequest, response: requests.Response) -> Optional[Dict[str, Any]]:
         if 200 <= response.status_code < 300:
             try:
                 return response.json()
@@ -85,7 +85,7 @@ class Http:
 
         return request
 
-    def mangle_response(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
+    def mangle_response(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         data = self.select_data(request, response)
         pages = self.select_pages(request, response)
 
@@ -102,13 +102,13 @@ class Http:
 
         return data
 
-    def select_data(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[Dict[str, Any], None]:
+    def select_data(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         return None
 
-    def select_pages(self, request: HttpRequest, response: Union[Dict[str, Any], None]) -> Union[int, None]:
+    def select_pages(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[int]:
         return None
 
-    def __send_internal(self, request: HttpRequest) -> Union[Dict[str, Any], None]:
+    def __send_internal(self, request: HttpRequest) -> Optional[Dict[str, Any]]:
         kwargs = {}
 
         if request.method.is_post_like():
@@ -122,7 +122,7 @@ class Http:
 
         return self.check_response(request, response)
 
-    def __send(self, request: HttpRequest) -> Union[Dict[str, Any], None]:
+    def __send(self, request: HttpRequest) -> Optional[Dict[str, Any]]:
         request = self.mangle_request(request)
         data = self.__send_internal(request)
 

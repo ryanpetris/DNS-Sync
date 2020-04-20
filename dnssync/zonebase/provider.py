@@ -4,7 +4,7 @@ from .record import Record
 from .zone import Zone
 from ..common import DnsRecordType, Time
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Optional
 
 
 class Provider(ABC):
@@ -23,7 +23,7 @@ class Provider(ABC):
         pass
 
     @abstractmethod
-    def get_zone(self, zone: str) -> Union[Zone, None]:
+    def get_zone(self, zone: str) -> Optional[Zone]:
         pass
 
     @abstractmethod
@@ -46,7 +46,7 @@ class Provider(ABC):
     def delete_record(self, zone: str, record: Record):
         pass
 
-    def find_record_ttl(self, *args: Union[Record, None], default: int = None) -> int:
+    def find_record_ttl(self, *args: Optional[Record], default: int = None) -> int:
         for record in args:
             if record and record.ttl and record.ttl.seconds:
                 return record.ttl.seconds
