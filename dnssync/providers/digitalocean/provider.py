@@ -77,23 +77,23 @@ class Provider(BaseProvider):
 
         z.records.remove(record)
 
-    @staticmethod
-    def __get_request_info(dns_record, do_record=None):
+    @classmethod
+    def __get_request_info(cls, record, old_record=None):
         data = {
-            "type": f"{do_record and do_record.type or dns_record.type}",
-            "name": do_record and do_record.host or dns_record.host,
-            "ttl": dns_record and dns_record.ttl and dns_record.ttl.seconds or do_record and do_record.ttl,
-            "data": dns_record.data.target if dns_record.data.target else None,
-            "priority": dns_record.data.priority,
-            "weight": dns_record.data.weight,
-            "port": dns_record.data.port,
+            "type": f"{record.type}",
+            "name": record.host,
+            "ttl": cls.find_record_ttl(record, old_record),
+            "data": record.data.target,
+            "priority": record.data.priority,
+            "weight": record.data.weight,
+            "port": record.data.port,
             "tag": None
         }
 
-        if dns_record.type == DnsRecordType.TXT:
-            data["data"] = dns_record.data.normalized
+        if record.type == DnsRecordType.TXT:
+            data["data"] = record.data.normalized
 
         if data["data"] is None:
-            data["data"] = f"{dns_record.data}"
+            data["data"] = f"{record.data}"
 
         return data

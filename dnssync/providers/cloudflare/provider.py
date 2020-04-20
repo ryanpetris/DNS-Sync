@@ -57,7 +57,7 @@ class Provider(BaseProvider):
             "name": record.host,
             "type": f"{record.type}",
             "content": record.data.normalized,
-            "ttl": record and record.ttl and record.ttl.seconds or 1,
+            "ttl": self.find_record_ttl(record, default=1),
             "proxied": False
         }
 
@@ -69,7 +69,7 @@ class Provider(BaseProvider):
 
             cf_record = {
                 "type": "SRV",
-                "ttl": record and record.ttl and record.ttl.seconds or 1,
+                "ttl": self.find_record_ttl(record, default=1),
                 "data": {
                     "service": cf_service,
                     "proto": cf_proto,
@@ -93,21 +93,21 @@ class Provider(BaseProvider):
         z = self.get_zone(zone)
 
         cf_record = {
-            "name": record.host,
-            "type": f"{record.type}",
+            "name": new_record.host,
+            "type": f"{new_record.type}",
             "content": new_record.data.normalized,
-            "ttl": new_record and new_record.ttl and new_record.ttl.seconds or 1
+            "ttl": self.find_record_ttl(new_record, record, default=1)
         }
 
-        if record.type == DnsRecordType.SRV:
-            name_parts = record.host.split(".")
+        if new_record.type == DnsRecordType.SRV:
+            name_parts = new_record.host.split(".")
 
             cf_service, cf_proto = name_parts[:2]
             cf_name = ".".join(name_parts[2:]) or "@"
 
             cf_record = {
                 "type": "SRV",
-                "ttl": new_record and new_record.ttl and new_record.ttl.seconds or 1,
+                "ttl": self.find_record_ttl(new_record, record, default=1),
                 "data": {
                     "service": cf_service,
                     "proto": cf_proto,

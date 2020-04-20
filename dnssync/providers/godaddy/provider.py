@@ -72,12 +72,11 @@ class Provider(BaseTransactionProvider):
         z = self.get_zone(zone)
         z.records.remove(record)
 
-    @staticmethod
-    def __get_request_info(record):
+    def __get_request_info(self, record):
         data = {
             "type": f"{record.type}",
             "name": record.host,
-            "ttl": record and record.ttl and record.ttl.seconds or 0,
+            "ttl": self.find_record_ttl(record),
             "data": record.data.target
         }
 

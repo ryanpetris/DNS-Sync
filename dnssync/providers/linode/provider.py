@@ -75,16 +75,16 @@ class Provider(BaseProvider):
 
         z.records.remove(record)
 
-    @staticmethod
-    def __get_request_info(dns_record, linode_record=None):
+    @classmethod
+    def __get_request_info(cls, record, old_record=None):
         data = {
-            "type": f"{linode_record and linode_record.type or dns_record.type}",
-            "name": linode_record and linode_record.host or dns_record.host,
-            "ttl_sec": dns_record and dns_record.ttl and dns_record.ttl.seconds or linode_record and linode_record.ttl,
-            "target": (dns_record.data.target.rstrip(".") or ".") if dns_record.data.target else None,
-            "priority": dns_record.data.priority or 0,
-            "weight": dns_record.data.weight or 0,
-            "port": dns_record.data.port or 0,
+            "type": f"{record.type}",
+            "name": record.host,
+            "ttl_sec": cls.find_record_ttl(record, old_record),
+            "target": (record.data.target.rstrip(".") or ".") if record.data.target else None,
+            "priority": record.data.priority or 0,
+            "weight": record.data.weight or 0,
+            "port": record.data.port or 0,
             "service": None,
             "protocol": None,
             "tag": None
@@ -93,14 +93,13 @@ class Provider(BaseProvider):
         if data["name"] == "@":
             data["name"] = ""
 
-        if dns_record.type == DnsRecordType.SRV:
-            data["service"] = Record.get_service_from_host(data["name"])
-            data["protocol"] = Record.get_protocol_from_host(data["name"])
+        if record.type == DnsRecordType.SRV:
+            data["service"], data["protocol"] = (x.lstrip("_") for x in data["name"].split(".")[:2])
 
-        if dns_record.type == DnsRecordType.TXT:
-            data["target"] = dns_record.data.normalized
+        if record.type == DnsRecordType.TXT:
+            data["target"] = record.data.normalized
 
         if data["target"] is None:
-            data["target"] = f"{dns_record.data}"
+            data["target"] = f"{record.data}"
 
         return data
