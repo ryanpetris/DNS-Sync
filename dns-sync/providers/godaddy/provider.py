@@ -10,6 +10,10 @@ from typing import List, Optional
 
 class Provider(BaseTransactionProvider):
     @property
+    def description(self) -> str:
+        return "GoDaddy sync provider."
+
+    @property
     def zones(self):
         if self.__zones is None:
             params = {

@@ -44,4 +44,4 @@ class Api(Http):
         return response and "pages" in response and response["pages"] or None
 
 
-StaticApi = HttpStatic.make_static(Api())
+StaticApi = HttpStatic.make_static(Api)

@@ -48,4 +48,4 @@ class Api(Http):
         raise Exception(response.text)
 
 
-StaticApi = HttpStatic.make_static(Api())
+StaticApi = HttpStatic.make_static(Api)

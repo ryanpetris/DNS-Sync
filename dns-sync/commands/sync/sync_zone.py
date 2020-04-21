@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from .sync_action import SyncAction, UpdateSyncAction, CreateSyncAction, DeleteSyncAction
-from ..common import DnsRecordType
-from ..zonebase import Provider, Record, TransactionProvider
+from ...common import DnsRecordType
+from ...zonebase import Provider, Record, TransactionProvider
 from typing import Dict, List, Tuple
 
 

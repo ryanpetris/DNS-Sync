@@ -11,6 +11,10 @@ from typing import List, Optional
 
 class Provider(BaseReadOnlyProvider):
     @property
+    def description(self) -> str:
+        return "Zone file sync provider (read only)."
+
+    @property
     def id(self) -> str:
         return "zonefile"
 

@@ -23,10 +23,10 @@ class Api(Http):
         username = username or os.environ.get("NAMECOM_API_USERNAME")
         password = password or os.environ.get("NAMECOM_API_PASSWORD")
 
-        self.__token = b64encode(f"{username}:{password}".encode("utf-8")).decode("utf-8")
+        if not username or not password:
+            raise ValueError("username and password must be specified or NAMECOM_API_USERNAME and NAMECOM_API_PASSWORD environment variable must exist.")
 
-        if not self.__token:
-            raise ValueError("token must be specified or NAMECOM_API_TOKEN environment variable must exist.")
+        self.__token = b64encode(f"{username}:{password}".encode("utf-8")).decode("utf-8")
 
     def check_response(self, request: HttpRequest, response: requests.Response) -> Optional[Dict[str, Any]]:
         try:
@@ -58,4 +58,4 @@ class Api(Http):
         return response and "lastPage" in response and response["lastPage"] or None
 
 
-StaticApi = HttpStatic.make_static(Api())
+StaticApi = HttpStatic.make_static(Api)

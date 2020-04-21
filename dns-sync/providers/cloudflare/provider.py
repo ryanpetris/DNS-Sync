@@ -10,6 +10,10 @@ from typing import List, Optional
 
 class Provider(BaseProvider):
     @property
+    def description(self) -> str:
+        return "CloudFlare sync provider."
+
+    @property
     def zones(self):
         if self.__zones is None:
             zones = StaticApi.get("zones")

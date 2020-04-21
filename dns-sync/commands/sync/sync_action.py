@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from ..zonebase import Record
+from ...zonebase import Record
 
 
 class SyncAction:

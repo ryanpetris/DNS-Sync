@@ -74,4 +74,4 @@ class Api(Http):
         return int(next(iter(url_query["page"])))
 
 
-StaticApi = HttpStatic.make_static(Api())
+StaticApi = HttpStatic.make_static(Api)

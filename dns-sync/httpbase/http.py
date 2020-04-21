@@ -7,7 +7,7 @@ import requests
 
 from copy import deepcopy
 from enum import Enum, auto
-from typing import Any, Dict, Optional
+from typing import Any, ClassVar, Dict, Optional
 
 
 class HttpMethod(Enum):
@@ -146,10 +146,21 @@ class Http:
 
 class HttpStatic:
     @staticmethod
-    def make_static(instance: Http):
-        class StaticHttp:
-            api = instance
+    def make_static(http_class: ClassVar[Http]):
+        class StaticHttpMeta(type):
+            @property
+            def api(self) -> Http:
+                if not self.__api_instance:
+                    self.__api_instance = http_class()
 
+                return self.__api_instance
+
+            def __init__(cls, name, bases, dct):
+                super().__init__(name, bases, dct)
+
+                cls.__api_instance: Optional[Http] = None
+
+        class StaticHttp(metaclass=StaticHttpMeta):
             @classmethod
             def delete(cls, url, params=None, headers=None):
                 return cls.api.delete(url, params=params, headers=headers)
