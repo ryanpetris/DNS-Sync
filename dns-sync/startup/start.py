@@ -5,8 +5,7 @@ from ..commandbase import Command
 
 
 def start():
-    commands = Command.get_all()
     arguments = get_arguments()
-    command = next(c for c in commands if c.id == arguments.command)
+    command = next(c for c in Command.get_all() if c.id == arguments.command)
 
     command.run(arguments)
