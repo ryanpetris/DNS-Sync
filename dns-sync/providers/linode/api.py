@@ -38,10 +38,16 @@ class Api(Http):
         raise Exception(response.text)
 
     def select_data(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-        return response and "data" in response and response["data"] or None
+        if response and "data" in response:
+            return response["data"]
+
+        return None
 
     def select_pages(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[int]:
-        return response and "pages" in response and response["pages"] or None
+        if response and "pages" in response:
+            return response["pages"]
+
+        return None
 
 
 StaticApi = HttpStatic.make_static(Api)
