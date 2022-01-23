@@ -61,6 +61,10 @@ class Provider(BaseProvider):
             "proxied": False
         }
 
+        if record.type == DnsRecordType.MX:
+            cf_record["content"] = (record.data.target.rstrip(".") or ".") if record.data.target else None
+            cf_record["priority"] = record.data.priority or 0
+
         if record.type == DnsRecordType.SRV:
             name_parts = record.host.split(".")
 
@@ -98,6 +102,10 @@ class Provider(BaseProvider):
             "content": new_record.data.normalized,
             "ttl": self.find_record_ttl(new_record, record, default=1)
         }
+
+        if record.type == DnsRecordType.MX:
+            cf_record["content"] = (record.data.target.rstrip(".") or ".") if record.data.target else None
+            cf_record["priority"] = record.data.priority or 0
 
         if new_record.type == DnsRecordType.SRV:
             name_parts = new_record.host.split(".")

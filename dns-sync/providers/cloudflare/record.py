@@ -23,6 +23,8 @@ class Record(BaseRecord):
 
         if self.type == DnsRecordType.SRV:
             content = re.sub("\\s+", " ", content)
+
+        if self.type in [DnsRecordType.SRV, DnsRecordType.MX]:
             content = f"{record['priority']} {content}"
 
         if self.type in [DnsRecordType.TXT, DnsRecordType.SPF]:

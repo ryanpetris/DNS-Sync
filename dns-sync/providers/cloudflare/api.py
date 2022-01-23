@@ -38,7 +38,7 @@ class Api(Http):
         raise Exception(response.text)
 
     def select_data(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-        return response and "result" in response and response["result"] or None
+        return response and "result" in response and response["result"]
 
     def select_pages(self, request: HttpRequest, response: Optional[Dict[str, Any]]) -> Optional[int]:
         return response and "result_info" in response and "total_pages" in response["result_info"] and response["result_info"]["total_pages"] or None
