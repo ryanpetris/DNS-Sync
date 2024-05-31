@@ -127,7 +127,7 @@ class Provider(BaseProvider):
                 }
             }
 
-        response = StaticApi.put(f"zones/{z.id}/dns_records/{record.id}", data=cf_record)
+        response = StaticApi.patch(f"zones/{z.id}/dns_records/{record.id}", data=cf_record)
 
         record.set_data(response)
 
