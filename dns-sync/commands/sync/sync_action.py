@@ -27,7 +27,7 @@ class UpdateSyncAction(SyncAction):
         parts.append("Update")
         parts.append(f"{self.source.host}")
 
-        if self.source.ttl != self.destination.ttl:
+        if not self.destination.compare_ttl(self.source):
             parts.append(f"({self.destination.ttl or 0} -> {self.source.ttl or 0})")
         else:
             parts.append(f"{self.destination.ttl or 0}")

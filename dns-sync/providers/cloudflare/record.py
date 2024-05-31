@@ -13,6 +13,7 @@ class Record(BaseRecord):
         self.id = record["id"]
         self.host = ".".join(record["name"].split(".")[:-2])
         self.type = record["type"]
+        self.cf_proxied = record.get("proxied", False)
 
         self.set_data(record)
 
@@ -31,3 +32,12 @@ class Record(BaseRecord):
             content = TxtRecordData.quote_data(content)
 
         self.data = content
+
+    def compare_ttl(self, record: BaseRecord) -> bool:
+        if self.cf_proxied:
+            return True
+
+        if hasattr(record, "cf_proxied") and record.cf_proxied:
+            return True
+
+        return super().compare_ttl(record)

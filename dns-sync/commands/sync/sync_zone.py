@@ -62,7 +62,7 @@ def sync_zone(zone: str, source_provider: Provider, destination_provider: Provid
             destination_record = next((r for r in destination_records if r.data.normalized == source_record.data.normalized), None)
 
             if destination_record:
-                if source_record.ttl != destination_record.ttl:
+                if not destination_record.compare_ttl(source_record):
                     sync_actions.append(UpdateSyncAction(source_record, destination_record))
 
                 source_records.remove(source_record)

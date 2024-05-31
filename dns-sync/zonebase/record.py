@@ -80,6 +80,9 @@ class Record:
     def __str__(self):
         return self.raw
 
+    def compare_ttl(self, record: 'Record') -> bool:
+        return self.ttl == record.ttl
+
     @staticmethod
     def normalize_host(host: Optional[str]) -> str:
         return host or "@"
