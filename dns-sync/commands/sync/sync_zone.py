@@ -85,7 +85,7 @@ def sync_zone(zone: str, source_provider: Provider, destination_provider: Provid
         for destination_record in destination_records:
             sync_actions.append(DeleteSyncAction(destination_record))
 
-    for action in sync_actions:
+    for action in sorted(sync_actions, key=sort_action):
         print(action)
 
         if isinstance(action, CreateSyncAction):
@@ -98,7 +98,21 @@ def sync_zone(zone: str, source_provider: Provider, destination_provider: Provid
 
         if isinstance(action, DeleteSyncAction):
             destination_provider.delete_record(zone, action.destination)
+            continue
 
     if sync_actions and isinstance(destination_provider, TransactionProvider):
         print(f"Committing zone {zone} to provider {destination_provider.id}")
         destination_provider.commit_zone(zone)
+
+
+def sort_action(action: SyncAction) -> int:
+    if isinstance(action, DeleteSyncAction):
+        return -1
+
+    if isinstance(action, CreateSyncAction):
+        return 0
+
+    if isinstance(action, UpdateSyncAction):
+        return 1
+
+    return 2
